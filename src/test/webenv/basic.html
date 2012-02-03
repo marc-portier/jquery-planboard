@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+<HEAD>
+  <TITLE>jquery-planBoard test and demo page</TITLE>
+  
+  <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.css"         media="all" />
+  <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.lozenge.css" media="all" />
+  <link type="text/css" rel="stylesheet"      href="./css/demo.css"                       media="all" />
+  <link type="text/css" rel="stylesheet/less" href="./css/jquery.planboard.less"          media="all" />
+
+  <script type="text/javascript" src="./js/less-1.2.1.min.js"></script>
+
+  <SCRIPT TYPE="text/javascript" SRC="./js/jquery-1.7.1.min.js" ></SCRIPT>
+  <script type="text/javascript" src="./js/jquery.mousewheel.js"></script>
+  <script type="text/javascript" src="./js/jquery.jscrollpane.min.js"></script>
+  
+  <SCRIPT TYPE="text/javascript" SRC="../../main/js/jquery-planboard.js" ></SCRIPT>
+  
+  <SCRIPT TYPE="text/javascript" >
+    ;(function($) {
+        $(document).ready( function() {
+            $('div#planboard').planboard();
+        });
+    }(jQuery));
+  </SCRIPT>
+
+</HEAD>
+<BODY>
+    <P>Now here is a fine planboard if you ask me:
+    <DIV ID="planboard">no planboard yet</DIV>
+</BODY>
+</HTML>

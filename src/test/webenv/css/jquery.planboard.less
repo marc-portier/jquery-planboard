@@ -1,0 +1,73 @@
+@northScrollHeight: 65px;
+@westScrollWidth:   65px;
+@jspSize:           16px;
+        
+@unitBorder:  1px;
+@unitHeight:  32px;
+@unitWidth:   32px;
+@coreHeight:  @unitHeight - (@unitBorder);
+@coreWidth:   @unitWidth - (@unitBorder);
+
+.planboard {
+    margin:             0;
+    padding:            0;
+    border:             0;
+    text-align:         center;
+
+    
+    .uc {
+        border-left:    @unitBorder solid black;
+        overflow:       hidden;
+        font-size:      0.8em;
+        font-family:    sans-serif;
+    }
+    .uc:first-child {
+        border-top:     @unitBorder solid black;
+    }
+    .u {
+        border-bottom:  @unitBorder solid black;
+        border-right:   @unitBorder solid black;
+        overflow:       hidden;
+        float:          left;
+        text-align:     center;
+        line-height:    @unitHeight;
+
+        &.h {
+            height:         @coreHeight;
+        }
+        &.w {
+            width:          @coreWidth;
+        }
+    }
+    .north, .south, .east, .west, .equator, .meridian {
+        float:          left;
+        text-align:     center;
+        overflow:       hidden;
+        position:       relative;
+    }
+    .north, .south {
+    }
+    .east, .west {
+    }
+    .north {
+        .u.w {
+            height: @northScrollHeight - @jspSize - 2 * (@unitBorder);
+            line-height: @unitHeight * 3 / 4; 
+        }
+    }    
+    .south {
+    }
+    .west {
+        clear:          left;
+        text-align:     left;
+        .u.h {
+            width: @westScrollWidth - @jspSize - 2 * (@unitBorder);
+        }
+    }
+    .equator.meridian {
+    }
+    .east {
+        float:          right;
+        text-align:     right;
+    }
+}

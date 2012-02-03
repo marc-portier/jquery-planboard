@@ -1,0 +1,24 @@
+#planboard
+{
+	background: #eef;
+	background-image: url('../img/bg-boxes.png');
+	width: 100%;
+	height: 650px;
+}
+
+/*
+div.transbox
+{
+    background-color:#ffffff;
+    border:1px solid black;
+    opacity:0.6;
+    filter:alpha(opacity=60);
+}
+
+div.transbox p
+{
+    margin:30px 40px;
+    font-weight:bold;
+    color:#000000;
+}
+*/

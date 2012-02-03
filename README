@@ -1,0 +1,12 @@
+jquery based Planboard viewer with events and callbacks for managing planning schedules of many kinds.
+
+
+
+
+Using:
+
+jScrollPane from http://www.kelvinluck.com/assets/jquery/jScrollPane/jScrollPane.html
+    github: https://github.com/vitch/jScrollPane
+    
+less.js from http://lesscss.org
+    github: https://github.com/cloudhead/less.js
