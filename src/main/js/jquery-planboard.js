@@ -213,16 +213,25 @@
         return od; 
     }
     
+    var ONEDAYms = 1000 * 60 * 60 * 24;
+    Planboard.date2Num = function(date) {
+        if (!date) {
+            return null;
+        }
+        return parseInt(date.getTime() / ONEDAYms );
+    };
     
-    Planboard.dateNum = function(date) {
-
-        return (((date.getFullYear() * 100) + date.getMonth() + 1) * 100) + date.getDate();
-    }
+    Planboard.num2Date = function(num) {
+        if (!num) {
+            return null;
+        }
+        return new Date(num * ONEDAYms);
+    };
     
     Planboard.prototype.appendCol = function(count) {
         this.addCol(false,count);
-    }
-
+    };
+    
     Planboard.prototype.prependCol = function(count) {
         this.addCol(true,count);
     }
@@ -234,31 +243,22 @@
         }
     
         if (this.cols == null) {
-            this.cols = []; 
-            //TODO reconsider this complete array: 
-            // we probably only need to keep track of first, last and total number
-            // not too fast: when adding a row we need to run through all the cols 
-            // >> then num should be counting days since epoch rather then the calculated current num
-            this.cols.bynum={};
+            this.cols = {"count": 0, "bynum": {}}; 
         }
         
-        var last = this.cols[this.cols.length -1];
-        var newDate;
-        if (!last) {
-            newDate =  Planboard.offsetDate();
+        var refDateNum, newDateNum, offset;
+        if (prepend) {
+            refDateNum = this.cols.firstnum;
+            offset = -1;
         } else {
-            var offset = 1;
-            if (prepend) {
-                last = this.cols[0];
-                offset = -1;
-            }
-            
-            var lastDate = this.cols.bynum[last].date;
-            newDate = Planboard.offsetDate(offset, lastDate);
+            refDateNum = this.cols.lastnum;
+            offset = 1;
         }
+        
+        newDateNum = refDateNum ? refDateNum + offset : Planboard.date2Num(Planboard.offsetDate());
         
         // add logically
-        var newCol = new PlanColumn(newDate, this, prepend);
+        var newCol = new PlanColumn(newDateNum, this, prepend);
         
         // add visually
         if (prepend) {
@@ -272,7 +272,7 @@
         var newHeight = Math.max(this.$north.height(), newCellHeight);
         this.$north.height(newHeight);
         
-        var newWidth =  1 + this.cols.length * (1+newCol.$elm.width());
+        var newWidth =  1 + this.cols.count * (1+newCol.$elm.width());
         var oldWidth = this.$north.width();
         
         this.$north.width(newWidth);
@@ -282,39 +282,42 @@
         this.reinitHorizontalScrollBar();
     };
     
-    function PlanColumn(date, board, prepend) {
+    function PlanColumn(datenum, board, prepend) {
         prepend = prepend || false;
         var allCols   = board.cols;
         var datenames = board.config.datenames;
         
-        this.date     = date;
-        this.datenum  = Planboard.dateNum(this.date);
-        this.label    = datenames[date.getDay()] + " " + date.getDate() + "/" + (date.getMonth()+1);
+        this.datenum  = datenum;
+        this.date     = Planboard.num2Date(datenum);
+        this.label    = datenames[this.date.getDay()] + "<br/>" + this.date.getDate();
         this.$cells   = $([]);
-        this.classes= ["m"+ ((1+date.getMonth())%2)];
-        if (date.getDay() % 6 == 0) { //weekend is day 0 or day 6
+        this.classes= ["m"+ ((1+this.date.getMonth())%2)];
+        if (this.date.getDay() % 6 == 0) { //weekend is day 0 or day 6
             this.classes.push("we");
         }
         var headId    = toCellId("", this.datenum);
         this.$elm     = $("<div class='u w "+this.classes.join(" ")+"' id="+headId+">"+this.label+"</div>");
         
-        // hookup to the planboard structure
-        if (prepend) {
-            allCols.unshift(0);
-            allCols[0] = this.datenum;
-        } else {
-            allCols.push(this.datenum);
-        }
-        
+        // hookup to the planboard structure        
         allCols.bynum[this.datenum]=this;
+        if (prepend) {
+            allCols.firstnum = this.datenum;
+            allCols.lastnum  = allCols.lastnum || allCols.firstnum;  // if prepending first
+        } else {
+            allCols.lastnum = this.datenum;
+            allCols.firstnum  = allCols.firstnum || allCols.lastnum; // if appending first
+        }
+        allCols.count++;
+        
 
-        //TODO add this col to existing rows!
         var allRows = board.rows;
-        var code;
-        for (code in allRows) {
-            var row = allRows[code];
-            
-            newCell(row.code, this.datenum, row, this, prepend);
+        if (allRows) {
+            var code;
+            for (code in allRows.bycode) {
+                var row = allRows.bycode[code];
+                
+                newCell(row.code, this.datenum, row, this, prepend);
+            }
         }
     }
         
@@ -323,10 +326,10 @@
         // TODO row-code should become ID of some sort, label should be externally added.
         
         if (this.rows == null) {
-            this.rows={};
-            this.rowcount=0;
+            this.rows={ "count" : 0, "bycode" : {}};
         }
-        var newRow = this.rows[code];
+        
+        var newRow = this.rows.bycode[code];
         if (newRow) {  // already exists! 
             return;
         } 
@@ -343,7 +346,7 @@
         var newWidth = Math.max(this.$west.width(), newCellWidth);
         this.$west.width(newWidth);
         
-        var newHeight = 1 + this.rowcount * (1+newRow.$elm.height());
+        var newHeight = 1 + this.rows.count * (1+newRow.$elm.height());
         this.$west.height(newHeight);
         this.$center.height(newHeight);
         this.reinitVerticalScrollBar();
@@ -351,7 +354,7 @@
     
     function PlanRow(code, board) {
         var allRows   = board.rows;
-        var rowClass  = "r" + (board.rowcount % 2);
+        var rowClass  = "r" + (allRows.count % 2);
         
         this.code     = code; //TODO maybe strip spaces?
         this.label    = code;
@@ -359,16 +362,15 @@
         this.$elm     = $("<div class='u h "+rowClass+"' id="+headId+">"+this.label+"</div>");
         
         // hookup to the planboard structure
-        allRows[code]=this;
-        board.rowcount++;
+        allRows.bycode[code]=this;
+        allRows.count++;
         
         var rowId     = toCellId(code, "--");
         this.$row     = $("<div class='uc "+rowClass+"' id="+rowId+"></div>");
         //TODO add existing cols to this row >> USE HTML cat for speed!!!
         var allCols = board.cols;
-        var i=0, numCols = allCols.length;
-        for (i=0; i<numCols; i++) {
-            var colnum = allCols[i];
+        var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
+        for (colnum=firstnum; colnum <= lastnum; colnum++) {
             var col = allCols.bynum[colnum];
             
             newCell(this.code, colnum, this, col);
