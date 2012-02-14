@@ -1,3 +1,23 @@
+//(c) 2012, Marc Portier
+// CC-SA-BY license 3.0 - BE, see 
+
+    
+ //TODO
+ //1. group adding of cols >> better perf.
+ //2- month-heads
+ //3- special-period-heads
+ //4- reservation-indications
+ //5- ajax calls for data loading
+ //6- apis - events - config
+ //7- optimise building and general speed + cleanup pcode
+ //   (see also code for jsp - samples more hidden variables inside 'create' function, better encapsulation
+ //    jquery tricks: add elms through HTML generation then lookup by id or class.
+ //    some more lambda functions here and there)
+ //8- tools & buttons:  select new period - pan? - find free wizard - add VE, add dates
+ //9- visualisation: statusbar - loading - elements
+ //10 - checkup bouncing around effect upon resize: avoid through absolute position of elements in n-e-s-w-grid
+
+
 ;
 ( function( $) {
 
@@ -30,8 +50,6 @@
     //
     // -------------------------------------------------------------------------
     
-    
- 
 
 
     // -------------------------------------------------------------------------
@@ -51,48 +69,76 @@
     }
     
     Planboard.config = {
-        jScrollPane: {showArrows: true},
-        northScrollHeight: "65px",
-        westScrollWidth: "65px",
-        datenames: ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"]
+        jScrollPane:       {showArrows: true},
+        northScrollHeight: "95px",
+        westScrollWidth:   "95px",
+        datenames:         ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
+        addDayCount:       7,
+        initDayCount:      42,
+        scrollBarSize:     16
     }
     
 
+    function createGrid(base) {
+        base.$nw=$("<div class='north west'      ></div>");
+        base.$nm=$("<div class='north meridian'  ></div>");
+        base.$ne=$("<div class='north east'      ></div>");
+        base.$NO=$([]).add(base.$nw).add(base.$nm).add(base.$ne);
+
+        base.$ew=$("<div class='equator west'    ></div>");
+        base.$em=$("<div class='equator meridian'></div>");
+        base.$ee=$("<div class='equator east'    ></div>");
+        base.$EQ=$([]).add(base.$ew).add(base.$em).add(base.$ee);
+
+        base.$sw=$("<div class='south west'      ></div>");
+        base.$sm=$("<div class='south meridian'  ></div>");
+        base.$se=$("<div class='south east'      ></div>");
+        base.$SO=$([]).add(base.$sw).add(base.$sm).add(base.$se);
+    }
+    
     Planboard.prototype.init = function() {
-        this.$nw=$("<div class='north west'      >nw                   </div>");
-        this.$nm=$("<div class='north meridian'  ></div>");
-        this.$ne=$("<div class='north east'      >ne                   </div>");
-        this.$NO=$([]).add(this.$nw).add(this.$nm).add(this.$ne);
-
-        this.$ew=$("<div class='equator west'    ></div>");
-        this.$em=$("<div class='equator meridian'></div>");
-        this.$ee=$("<div class='equator east'    >east                 </div>");
-        this.$EQ=$([]).add(this.$ew).add(this.$em).add(this.$ee);
-
-        this.$sw=$("<div class='south west'      >sw                   </div>");
-        this.$sm=$("<div class='south meridian'  >south <br/> meridian </div>");
-        this.$se=$("<div class='south east'      >se                   </div>");
-        this.$SO=$([]).add(this.$sw).add(this.$sm).add(this.$se);
-
+        createGrid(this);
+        var me = this;
+        
         // initialise north
-        this.$nruler =$("<div class='uc'></div>");
-        this.$nscroll=$("<div style='width=100%; overflow:auto;'></div>");
+        this.$north = $("<div></div>");
+        this.$days =$("<div class='uc days'></div>");
+        this.$months =$("<div class='months'>months</div>");
+        this.$periods =$("<div class='periods'>periods</div>");
+        this.$north.append(this.$periods).append(this.$months).append(this.$days);
+        
+        this.$nscroll=$("<div style='width=100%; overflow:auto;margin-right: "+this.config.scrollBarSize+"px'></div>");
         this.$nscroll.height(this.config.northScrollHeight);
-        this.$nscroll.append(this.$nruler).jScrollPane(this.config.jScrollPane);
+        this.$nscroll.append(this.$north).jScrollPane(this.config.jScrollPane);
         this.$nm.append(this.$nscroll);
         
+        // initialise northwest
+        var $btnPreDates = $("<button class='colPrepend'>&lt;&lt;</button>").click(function() {
+            me.prependCol(me.config.addDayCount)
+        });
+        this.$nw.html("<div></div>").append($btnPreDates);
+        
+        // initialise northeast
+        var $btnAppDates = $("<button class='colAppend'>&gt;&gt;</button>").click(function() {
+            me.appendCol(me.config.addDayCount)
+        });
+        this.$ne.html("<div></div>").append($btnAppDates);
+        
         // initialise west
-        this.$wruler =$("<div class='uc'></div>");
+        this.$west =$("<div class='uc'></div>");
         this.$wscroll=$("<div style='overflow:auto;'></div>");
         this.$wscroll.width(this.config.westScrollWidth);
-        this.$wscroll.append(this.$wruler).jScrollPane(this.config.jScrollPane);
+        this.$wscroll.append(this.$west).jScrollPane(this.config.jScrollPane);
         this.$ew.append(this.$wscroll);
         
         //initialise center
-        this.$center =$("<div></div>").css("overflow", "hidden");
-        //Todo: need to wrap inside a scrollable?
-        this.$em.append(this.$center);
-        
+        this.$center =$("<div></div>");
+        this.$cscroll=$("<div style='overflow:auto;'></div>");
+        this.$cscroll.width(this.config.westScrollWidth);
+        this.$cscroll.height(this.config.northScrollHeight);
+        this.$cscroll.append(this.$center).jScrollPane(this.config.jScrollPane);
+        this.$em.append(this.$cscroll);
+    
         
         this.$WE=$([]).add(this.$nw).add(this.$ew).add(this.$sw);
         this.$ME=$([]).add(this.$nm).add(this.$em).add(this.$sm);
@@ -104,6 +150,11 @@
         // add some cols & rows (callback and or default)
         this.initCells();
 
+
+        // animate hookup the scrollers...
+        jspHookup('y', this.$cscroll, this.$wscroll);
+        jspHookup('x', this.$cscroll, this.$nscroll);
+        
         // size up and redo that upon resize
         this.initSize();
         
@@ -111,27 +162,43 @@
         $(window).resize(function(){me.initSize()});
     }
 
+    function jspHookup(axis, $el1, $el2) {
+        var ap1 = $el1.data('jsp');
+        var ap2 = $el2.data('jsp');
+        
+        var evt = 'jsp-scroll-' + axis;
+        var meth = 'scrollTo' + axis.toUpperCase();
+        
+        var link = true;
+        
+        _jspLink(link, $el1, evt, ap2, meth);
+        _jspLink(link, $el2, evt, ap1, meth);
+    };
+
+    function _jspLink(guard, $src, evt, tgt, meth) {
+        $src.bind(evt, function(event, pos, isMin, isMax){
+            if (guard) {
+                guard = false;
+                tgt[meth](pos);
+                guard = true;
+            }
+        });
+    };
+
 
     Planboard.prototype.initCells = function() {
     
         // todo call ajax for this...
         
-        var num = 35;
         var codes = 32;
         
         //appendCols
-        var i=0; 
-        for (i=0; i<num; i++) {
-            this.appendCol();
-        }
+        this.appendCol(this.config.initDayCount);
+        
         //append-prependRow or just insertRow(position)
         for (i=1; i<codes+1; i++) {
             var pfx = i<10 ? "0" : "";
             this.appendRow("VE " + pfx + i);
-        }
-        //appendCols again for testing
-        for (i=0; i<7; i++) {
-            this.appendCol();
         }
     };
     
@@ -152,10 +219,26 @@
         return (((date.getFullYear() * 100) + date.getMonth() + 1) * 100) + date.getDate();
     }
     
+    Planboard.prototype.appendCol = function(count) {
+        this.addCol(false,count);
+    }
+
+    Planboard.prototype.prependCol = function(count) {
+        this.addCol(true,count);
+    }
     
-    Planboard.prototype.appendCol = function() {
+    Planboard.prototype.addCol = function(prepend, count) {
+        prepend = prepend || false;
+        for (; count>1; count--) {
+            this.addCol(prepend);
+        }
+    
         if (this.cols == null) {
-            this.cols = [];
+            this.cols = []; 
+            //TODO reconsider this complete array: 
+            // we probably only need to keep track of first, last and total number
+            // not too fast: when adding a row we need to run through all the cols 
+            // >> then num should be counting days since epoch rather then the calculated current num
             this.cols.bynum={};
         }
         
@@ -164,40 +247,65 @@
         if (!last) {
             newDate =  Planboard.offsetDate();
         } else {
+            var offset = 1;
+            if (prepend) {
+                last = this.cols[0];
+                offset = -1;
+            }
+            
             var lastDate = this.cols.bynum[last].date;
-            newDate = Planboard.offsetDate(1, lastDate);
+            newDate = Planboard.offsetDate(offset, lastDate);
         }
         
         // add logically
-        var newCol = new PlanColumn(newDate, this);
+        var newCol = new PlanColumn(newDate, this, prepend);
         
         // add visually
-        this.$nruler.append(newCol.$elm).height();
+        if (prepend) {
+            this.$days.prepend(newCol.$elm);
+        } else {
+            this.$days.append(newCol.$elm);
+        }
         
         //resize
         var newCellHeight = newCol.$elm.height() + 1;
-        var newHeight = Math.max(this.$nruler.height(), newCellHeight);
-        this.$nruler.height(newHeight);
+        var newHeight = Math.max(this.$north.height(), newCellHeight);
+        this.$north.height(newHeight);
         
-        var newWidth =  this.cols.length * (1+newCol.$elm.width());
-        this.$nruler.width(newWidth);
-        this.$center.width(newWidth +1);
+        var newWidth =  1 + this.cols.length * (1+newCol.$elm.width());
+        var oldWidth = this.$north.width();
         
+        this.$north.width(newWidth);
+        this.$center.width(newWidth);
+        
+        //$(window).resize();
         this.reinitHorizontalScrollBar();
     };
     
-    function PlanColumn(date, board) {
+    function PlanColumn(date, board, prepend) {
+        prepend = prepend || false;
         var allCols   = board.cols;
         var datenames = board.config.datenames;
         
         this.date     = date;
         this.datenum  = Planboard.dateNum(this.date);
         this.label    = datenames[date.getDay()] + " " + date.getDate() + "/" + (date.getMonth()+1);
-        this.$elm     = $("<div class='u w'>"+this.label+"</div>").data("datenum", this.datenum);
         this.$cells   = $([]);
+        this.classes= ["m"+ ((1+date.getMonth())%2)];
+        if (date.getDay() % 6 == 0) { //weekend is day 0 or day 6
+            this.classes.push("we");
+        }
+        var headId    = toCellId("", this.datenum);
+        this.$elm     = $("<div class='u w "+this.classes.join(" ")+"' id="+headId+">"+this.label+"</div>");
         
         // hookup to the planboard structure
-        allCols.push(this.datenum);
+        if (prepend) {
+            allCols.unshift(0);
+            allCols[0] = this.datenum;
+        } else {
+            allCols.push(this.datenum);
+        }
+        
         allCols.bynum[this.datenum]=this;
 
         //TODO add this col to existing rows!
@@ -206,11 +314,14 @@
         for (code in allRows) {
             var row = allRows[code];
             
-            newCell(row.code, this.datenum, row, this);
+            newCell(row.code, this.datenum, row, this, prepend);
         }
     }
         
     Planboard.prototype.appendRow = function(code) {
+    
+        // TODO row-code should become ID of some sort, label should be externally added.
+        
         if (this.rows == null) {
             this.rows={};
             this.rowcount=0;
@@ -224,33 +335,36 @@
         newRow = new PlanRow(code, this);
         
         // add visually
-        this.$wruler.append(newRow.$elm);
+        this.$west.append(newRow.$elm);
         this.$center.append(newRow.$row);
         
         //resize
         var newCellWidth = newRow.$elm.width() + 1;
-        var newWidth = Math.max(this.$wruler.width(), newCellWidth);
-        this.$wruler.width(newWidth);
+        var newWidth = Math.max(this.$west.width(), newCellWidth);
+        this.$west.width(newWidth);
         
-        var newHeight = this.rowcount * (1+newRow.$elm.height());
-        this.$wruler.height(newHeight);
-        this.$center.height(newHeight + 1);
+        var newHeight = 1 + this.rowcount * (1+newRow.$elm.height());
+        this.$west.height(newHeight);
+        this.$center.height(newHeight);
         this.reinitVerticalScrollBar();
     };
     
     function PlanRow(code, board) {
         var allRows   = board.rows;
+        var rowClass  = "r" + (board.rowcount % 2);
         
         this.code     = code; //TODO maybe strip spaces?
         this.label    = code;
-        this.$elm     = $("<div class='u h'>"+this.label+"</div>").data("code", this.code);
+        var headId    = toCellId(code, "");
+        this.$elm     = $("<div class='u h "+rowClass+"' id="+headId+">"+this.label+"</div>");
         
         // hookup to the planboard structure
         allRows[code]=this;
         board.rowcount++;
         
-        this.$row     = $("<div class='uc'></div>");
-        //TODO add existing cols to this row
+        var rowId     = toCellId(code, "--");
+        this.$row     = $("<div class='uc "+rowClass+"' id="+rowId+"></div>");
+        //TODO add existing cols to this row >> USE HTML cat for speed!!!
         var allCols = board.cols;
         var i=0, numCols = allCols.length;
         for (i=0; i<numCols; i++) {
@@ -261,29 +375,40 @@
         }
     }
     
+    
+    function toCellId(code, num) {
+        return code + "#" + num;
+    }
+    
+    
+    //TODO change this into HTML production
     function newCell(code, num, row, col, prepend) {
         prepend = prepend || false;
         
-        var $cell = $("<div class='u h w'>&nbsp;</div>").data("code", code).data("num", num);
+        var cellId = toCellId(code, num);
+        var $cell = $("<div class='u h w " + col.classes.join(" ") + "' id='"+cellId+"'>&nbsp;</div>");
         if (prepend) {
             row.$row.prepend($cell);
         } else {
             row.$row.append($cell);
         }
-        col.$cells.add($cell);
+        col.$cells.add($cell); // don't do this in HTML production, instead add class-name with encoded datenum!
     }
     
+    
     Planboard.prototype.initSize = function() {
-       var noHeight = Math.max.apply(Math, this.$NO.map(function(){return $(this).height();}).get());
-       var soHeight = Math.max.apply(Math, this.$SO.map(function(){return $(this).height();}).get());
+       var noHeight = Math.max.apply(Math, this.$NO.map(function(){return $(this).css('height','').height();}).get());
+       var soHeight = Math.max.apply(Math, this.$SO.map(function(){return $(this).css('height','').height();}).get());
        var eqHeight = this.$board.height() - (noHeight + soHeight);
        this.$NO.height(noHeight);
        this.$SO.height(soHeight);
        this.$EQ.height(eqHeight);
-       this.$wscroll.height(eqHeight -1);
        
-       var weWidth = Math.max.apply(Math, this.$WE.map(function(){return $(this).width();}).get());
-       var eaWidth = Math.max.apply(Math, this.$EA.map(function(){return $(this).width();}).get());
+       this.$wscroll.height(eqHeight -17);
+       this.$cscroll.height(eqHeight -1);
+       
+       var weWidth = Math.max.apply(Math, this.$WE.map(function(){return $(this).css('width','').width();}).get());
+       var eaWidth = Math.max.apply(Math, this.$EA.map(function(){return $(this).css('width','').width();}).get());
        var meWidth = this.$board.width() - (weWidth + eaWidth);
        this.$WE.width(weWidth);
        this.$EA.width(eaWidth);
@@ -304,9 +429,11 @@
         api.reinitialise();
     }
     Planboard.prototype.reinitHorizontalScrollBar = function() {
+        reinitBar(this.$cscroll);
         reinitBar(this.$nscroll);
     }
     Planboard.prototype.reinitVerticalScrollBar = function() {
+        reinitBar(this.$cscroll);
         reinitBar(this.$wscroll);
     }
     

@@ -1,5 +1,6 @@
-@northScrollHeight: 65px;
-@westScrollWidth:   65px;
+@northScrollHeight: 95px;
+@westScrollWidth:   95px;
+@scrollBarSize:     16px;
 @jspSize:           16px;
         
 @unitBorder:  1px;
@@ -8,35 +9,96 @@
 @coreHeight:  @unitHeight - (@unitBorder);
 @coreWidth:   @unitWidth - (@unitBorder);
 
+
+
+
+// LESS provides a variety of functions which transform colors. 
+// Colors are first converted to the HSL color-space, 
+// and then manipulated at the channel level:
+
+// lighten(@color, 10%);    // return a color which is 10% *lighter* than @color
+// darken(@color, 10%);     // return a color which is 10% *darker* than @color
+// saturate(@color, 10%);   // return a color 10% *more* saturated than @color
+// desaturate(@color, 10%); // return a color 10% *less* saturated than @color
+// fadein(@color, 10%);     // return a color 10% *less* transparent than @color
+// fadeout(@color, 10%);    // return a color 10% *more* transparent than @color
+// spin(@color, 10);        // return a color with a 10 degree larger in hue than @color
+// spin(@color, -10);       // return a color with a 10 degree smaller hue than @color
+
+@ReservationColor:        fadeout(darken(spin(#f00, 5), 20%), 20%);
+@OptionColor:             spin(@ReservationColor, 33);
+@BlockColor:              darken(#f11, 90%);
+@AllotmentColor:          spin(@ReservationColor, 225);
+
+
+@pbBaseColor:            rgba(255,255,248,1);
+@pbPaleColor:            fadeout(@pbBaseColor, 80%);
+@r0BackColor:            fadein(@pbBaseColor, 100%);
+@r1BackColor:            spin(@r0BackColor, 90);
+
+@m0BackColor:            darken(spin(@pbPaleColor, 15),10%);
+@m1BackColor:            spin(@m0BackColor, 180);
+@wem0BackColor:          desaturate(@m0BackColor, 80%);
+@wem1BackColor:          desaturate(@m1BackColor, 80%);
+
+
 .planboard {
     margin:             0;
     padding:            0;
     border:             0;
     text-align:         center;
+    font-size:          0.8em;
+    font-family:        sans-serif;
+    overflow:           none;
 
-    
+    .r0 {  
+        background-color: @r0BackColor;
+    }
+    .r1 {
+        background-color: @r1BackColor;
+    }
+        
     .uc {
         border-left:    @unitBorder solid black;
         overflow:       hidden;
-        font-size:      0.8em;
-        font-family:    sans-serif;
     }
     .uc:first-child {
         border-top:     @unitBorder solid black;
     }
     .u {
         border-bottom:  @unitBorder solid black;
-        border-right:   @unitBorder solid black;
+        border-right:   @unitBorder dashed black;
         overflow:       hidden;
         float:          left;
-        text-align:     center;
         line-height:    @unitHeight;
 
+        &.r0 {  
+            background-color: @r0BackColor;
+        }
+        &.r1 {
+            background-color: @r1BackColor;
+        }
+        
         &.h {
             height:         @coreHeight;
         }
         &.w {
             width:          @coreWidth;
+        }
+        
+        /* m0 is default */
+        background-color:  @m0BackColor;
+
+        &.we {
+            background-color:  @wem0BackColor;
+        }
+
+        &.m1 {
+            background-color:  @m1BackColor;
+        }
+        
+        &.m1.we {
+            background-color:  @wem1BackColor;
         }
     }
     .north, .south, .east, .west, .equator, .meridian {
@@ -51,15 +113,30 @@
     }
     .north {
         .u.w {
-            height: @northScrollHeight - @jspSize - 2 * (@unitBorder);
+            /* height: @northScrollHeight - @jspSize - 2 * (@unitBorder); */
             line-height: @unitHeight * 3 / 4; 
+        }
+        .periods, .months {
+            height: 15px;
+        }
+        &.east {
+            button.colAppend {
+                height: @northScrollHeight - @scrollBarSize;
+                float: left;
+            }
+        }
+        &.west {
+            button.colPrepend {
+                height: @northScrollHeight - @scrollBarSize;
+                float: right;
+                margin-right: @scrollBarSize;
+            }
         }
     }    
     .south {
     }
     .west {
         clear:          left;
-        text-align:     left;
         .u.h {
             width: @westScrollWidth - @jspSize - 2 * (@unitBorder);
         }

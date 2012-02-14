@@ -1,7 +1,10 @@
 #planboard
 {
+	/* 
 	background: #eef;
 	background-image: url('../img/bg-boxes.png');
+	background: #fff;
+	*/
 	width: 100%;
 	height: 650px;
 }
