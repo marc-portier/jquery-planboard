@@ -9,6 +9,7 @@
 @coreHeight:  @unitHeight - (@unitBorder);
 @coreWidth:   @unitWidth - (@unitBorder);
 
+@monthHeight: 15px;
 
 
 
@@ -25,11 +26,6 @@
 // spin(@color, 10);        // return a color with a 10 degree larger in hue than @color
 // spin(@color, -10);       // return a color with a 10 degree smaller hue than @color
 
-@ReservationColor:        fadeout(darken(spin(#f00, 5), 20%), 20%);
-@OptionColor:             spin(@ReservationColor, 33);
-@BlockColor:              darken(#f11, 90%);
-@AllotmentColor:          spin(@ReservationColor, 225);
-
 
 @pbBaseColor:            rgba(255,255,248,1);
 @pbPaleColor:            fadeout(@pbBaseColor, 80%);
@@ -41,6 +37,19 @@
 @wem0BackColor:          desaturate(@m0BackColor, 80%);
 @wem1BackColor:          desaturate(@m1BackColor, 80%);
 
+
+/* snippet from hs2 sample */
+@DefaultRadius: 8px;
+.border-radius(@Radius: @DefaultRadius) {
+    -moz-border-radius: @Radius;
+    -webkit-border-radius: @Radius;
+}
+@ReservationColor:        fadeout(darken(spin(#f00, 5), 20%), 20%);
+@OptionColor:             spin(@ReservationColor, 33);
+@BlockColor:              darken(#f11, 90%);
+@AllotmentColor:          spin(@ReservationColor, 225);
+
+/* end snippet from hs2 sample */
 
 .planboard {
     margin:             0;
@@ -101,6 +110,28 @@
             background-color:  @wem1BackColor;
         }
     }
+
+    .months {
+        overflow: hidden;
+        height: @monthHeight;
+
+        .month {
+            .border-radius(@monthHeight);
+            float: left;
+            overflow: hidden;
+            height: 2*@monthHeight;
+            border: 1px dashed black;
+
+            /* m0 is default */
+            background-color:  @m0BackColor;
+
+            &.m1 {
+                background-color:  @m1BackColor;
+            }
+
+        }
+    }
+    
     .north, .south, .east, .west, .equator, .meridian {
         float:          left;
         text-align:     center;

@@ -3,8 +3,6 @@
 
     
  //TODO
- //1. group adding of cols >> better perf.
- //2- month-heads
  //3- special-period-heads
  //4- reservation-indications
  //5- ajax calls for data loading
@@ -13,6 +11,7 @@
  //   (see also code for jsp - samples more hidden variables inside 'create' function, better encapsulation
  //    jquery tricks: add elms through HTML generation then lookup by id or class.
  //    some more lambda functions here and there)
+ //    work less with dates, but rather with the datenums, only convert for visualization
  //8- tools & buttons:  select new period - pan? - find free wizard - add VE, add dates
  //9- visualisation: statusbar - loading - elements
  //10 - checkup bouncing around effect upon resize: avoid through absolute position of elements in n-e-s-w-grid
@@ -73,6 +72,7 @@
         northScrollHeight: "95px",
         westScrollWidth:   "95px",
         datenames:         ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
+        monthnames:        ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"], 
         addDayCount:       7,
         initDayCount:      42,
         scrollBarSize:     16
@@ -138,8 +138,17 @@
         this.$cscroll.height(this.config.northScrollHeight);
         this.$cscroll.append(this.$center).jScrollPane(this.config.jScrollPane);
         this.$em.append(this.$cscroll);
-    
         
+        //probe sizes
+        //TODO fix this and remove hardcoded
+        /*
+        this.$center.html("<div class='uc'><div class='u h w'>0</div></div>");
+        var $u = this.$center.find(".u.h.w");
+        this.config.unitsize = Math.max($u.width(), $u.height());
+        this.$center.html("");
+        */
+        this.config.unitsize = 32;
+
         this.$WE=$([]).add(this.$nw).add(this.$ew).add(this.$sw);
         this.$ME=$([]).add(this.$nm).add(this.$em).add(this.$sm);
         this.$EA=$([]).add(this.$ne).add(this.$ee).add(this.$se);
@@ -218,7 +227,7 @@
         if (!date) {
             return null;
         }
-        return parseInt(date.getTime() / ONEDAYms );
+        return Math.floor(0.5 + date.getTime() / ONEDAYms ); //adding one half here is crazy but got around an issue with 29/2/2012 ??
     };
     
     Planboard.num2Date = function(num) {
@@ -228,34 +237,67 @@
         return new Date(num * ONEDAYms);
     };
     
+    function monthClass(m) {
+        return "m"+ (1 + m) % 2;
+    };
+    
+    Planboard.prototype.updateMonths = function() {
+        
+        if (!this.cols) {
+            return;
+        }
+        var monthsHtml = "";
+
+        var fDateNum = this.cols.firstnum;
+        var lDateNum = this.cols.lastnum;
+        var cfDateNum = fDateNum; //current month first
+        
+        do {
+            var cfDate = Planboard.num2Date(cfDateNum);
+            var m = cfDate.getMonth();
+            var clDate = new Date(cfDate.getFullYear(), m+1, 0);
+            var clDateNum = Planboard.date2Num( clDate ); // last of this month == zeroth of next month
+            var clDateNum = Math.min(clDateNum, lDateNum); // trim to the end of the board
+
+            var days = 1 + clDateNum - cfDateNum;
+            var width = this.config.unitsize * days - 2;
+            var mclass = monthClass(m);
+
+            monthsHtml += "<div class='month " + mclass + "' style='width: " + width + "px;'>" + this.config.monthnames[m] + "</div>";
+            
+            cfDateNum = clDateNum + 1; // first of next month
+        } while (cfDateNum  < lDateNum);
+        this.$months.html(monthsHtml);        
+    }
+     
     Planboard.prototype.appendCol = function(count) {
-        this.addCol(false,count);
+        this._addCol(false,count);
+        this.updateMonths();
     };
     
     Planboard.prototype.prependCol = function(count) {
-        this.addCol(true,count);
+        this._addCol(true,count);
+        this.updateMonths();
     }
     
-    Planboard.prototype.addCol = function(prepend, count) {
+    Planboard.prototype._addCol = function(prepend, count) {
         prepend = prepend || false;
         for (; count>1; count--) {
-            this.addCol(prepend);
+            this._addCol(prepend);
         }
     
         if (this.cols == null) {
             this.cols = {"count": 0, "bynum": {}}; 
         }
         
-        var refDateNum, newDateNum, offset;
+        
+        var refDateNum = this.cols.lastnum, offset = 1; //defaults for append
         if (prepend) {
             refDateNum = this.cols.firstnum;
             offset = -1;
-        } else {
-            refDateNum = this.cols.lastnum;
-            offset = 1;
         }
         
-        newDateNum = refDateNum ? refDateNum + offset : Planboard.date2Num(Planboard.offsetDate());
+        var newDateNum = refDateNum ? refDateNum + offset : Planboard.date2Num(Planboard.offsetDate());
         
         // add logically
         var newCol = new PlanColumn(newDateNum, this, prepend);
@@ -278,7 +320,6 @@
         this.$north.width(newWidth);
         this.$center.width(newWidth);
         
-        //$(window).resize();
         this.reinitHorizontalScrollBar();
     };
     
@@ -291,7 +332,7 @@
         this.date     = Planboard.num2Date(datenum);
         this.label    = datenames[this.date.getDay()] + "<br/>" + this.date.getDate();
         this.$cells   = $([]);
-        this.classes= ["m"+ ((1+this.date.getMonth())%2)];
+        this.classes= [monthClass(this.date.getMonth())];
         if (this.date.getDay() % 6 == 0) { //weekend is day 0 or day 6
             this.classes.push("we");
         }
