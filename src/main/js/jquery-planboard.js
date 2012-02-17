@@ -139,16 +139,6 @@
         this.$cscroll.append(this.$center).jScrollPane(this.config.jScrollPane);
         this.$em.append(this.$cscroll);
         
-        //probe sizes
-        //TODO fix this and remove hardcoded
-        /*
-        this.$center.html("<div class='uc'><div class='u h w'>0</div></div>");
-        var $u = this.$center.find(".u.h.w");
-        this.config.unitsize = Math.max($u.width(), $u.height());
-        this.$center.html("");
-        */
-        this.config.unitsize = 32;
-
         this.$WE=$([]).add(this.$nw).add(this.$ew).add(this.$sw);
         this.$ME=$([]).add(this.$nm).add(this.$em).add(this.$sm);
         this.$EA=$([]).add(this.$ne).add(this.$ee).add(this.$se);
@@ -156,9 +146,17 @@
         this.$board.addClass("planboard").html("")
             .append(this.$NO).append(this.$EQ).append(this.$SO);
 
+
+        //probe sizes
+        if (!this.config.unitsize) {
+            this.$center.html("<div class='uc'><div class='u h w'>0</div></div>");
+            var $u = this.$center.find(".u.h.w");
+            this.config.unitsize = Math.max($u.outerWidth(), $u.outerHeight());
+            this.$center.html("");
+        }
+
         // add some cols & rows (callback and or default)
         this.initCells();
-
 
         // animate hookup the scrollers...
         jspHookup('y', this.$cscroll, this.$wscroll);
@@ -314,7 +312,7 @@
         var newHeight = Math.max(this.$north.height(), newCellHeight);
         this.$north.height(newHeight);
         
-        var newWidth =  1 + this.cols.count * (1+newCol.$elm.width());
+        var newWidth =  1 + this.cols.count * (this.config.unitsize);
         var oldWidth = this.$north.width();
         
         this.$north.width(newWidth);
@@ -387,7 +385,7 @@
         var newWidth = Math.max(this.$west.width(), newCellWidth);
         this.$west.width(newWidth);
         
-        var newHeight = 1 + this.rows.count * (1+newRow.$elm.height());
+        var newHeight = 1 + this.rows.count * (this.config.unitsize);
         this.$west.height(newHeight);
         this.$center.height(newHeight);
         this.reinitVerticalScrollBar();
