@@ -5,7 +5,7 @@
  //TODO
  //3- special-period-heads
  //4- reservation-indications
- //5- ajax calls for data loading
+ //5- ajax calls for data loading --- - periodes - reservaties
  //6- apis - events - config
  //7- optimise building and general speed + cleanup pcode
  //   (see also code for jsp - samples more hidden variables inside 'create' function, better encapsulation
@@ -16,7 +16,12 @@
  //9- visualisation: statusbar - loading - elements
  //10 - checkup bouncing around effect upon resize: avoid through absolute position of elements in n-e-s-w-grid
 
-
+ // --
+ // filtering nuttige VEs
+ // toevoegen vrije VEs
+ // selectie periode
+ // jump-to-month (6<< en 6>>)
+ 
 ;
 ( function( $) {
 
@@ -193,20 +198,23 @@
     };
 
 
+    function ajaxReturnVE(board, data, textStatus, jqXhr) {
+        var size = data.length;
+        for (i=0; i<size; i++) {
+            board.appendRow(data[i]);
+        }
+    }
+    
     Planboard.prototype.initCells = function() {
     
         // todo call ajax for this...
-        
-        var codes = 32;
+        var veuri = this.config.uri.ve;
+        var me = this;
+        $.get(veuri, function(d,s,x){ ajaxReturnVE(me, d, s, x);}, "json");
         
         //appendCols
         this.appendCol(this.config.initDayCount);
-        
-        //append-prependRow or just insertRow(position)
-        for (i=1; i<codes+1; i++) {
-            var pfx = i<10 ? "0" : "";
-            this.appendRow("VE " + pfx + i);
-        }
+
     };
     
     
@@ -360,7 +368,7 @@
         }
     }
         
-    Planboard.prototype.appendRow = function(code) {
+    Planboard.prototype.appendRow = function(rowData) {
     
         // TODO row-code should become ID of some sort, label should be externally added.
         
@@ -368,13 +376,17 @@
             this.rows={ "count" : 0, "bycode" : {}};
         }
         
+        //TODO make the fields to use as code & label configurable!
+        var code = rowData.id;
+        var label = rowData.label;
+        
         var newRow = this.rows.bycode[code];
         if (newRow) {  // already exists! 
             return;
         } 
         
         // add logically
-        newRow = new PlanRow(code, this);
+        newRow = new PlanRow(code, label, rowData, this);
         
         // add visually
         this.$west.append(newRow.$elm);
@@ -391,12 +403,14 @@
         this.reinitVerticalScrollBar();
     };
     
-    function PlanRow(code, board) {
+    function PlanRow(code, label, rowData, board) {
         var allRows   = board.rows;
         var rowClass  = "r" + (allRows.count % 2);
         
         this.code     = code; //TODO maybe strip spaces?
-        this.label    = code;
+        this.label    = label;
+        this.data     = rowData;
+        
         var headId    = toCellId(code, "");
         this.$elm     = $("<div class='u h "+rowClass+"' id="+headId+">"+this.label+"</div>");
         
@@ -411,7 +425,6 @@
         var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
         for (colnum=firstnum; colnum <= lastnum; colnum++) {
             var col = allCols.bynum[colnum];
-            
             newCell(this.code, colnum, this, col);
         }
     }
