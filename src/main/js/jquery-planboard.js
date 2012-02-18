@@ -74,7 +74,7 @@
     
     Planboard.config = {
         jScrollPane:       {showArrows: true},
-        northScrollHeight: "95px",
+        northScrollHeight: "115px",
         westScrollWidth:   "95px",
         datenames:         ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
         monthnames:        ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"], 
@@ -198,7 +198,7 @@
     };
 
 
-    function ajaxReturnVE(board, data, textStatus, jqXhr) {
+    function ajaxLoadedRows(board, data, textStatus, jqXhr) {
         var size = data.length;
         for (i=0; i<size; i++) {
             board.appendRow(data[i]);
@@ -208,9 +208,9 @@
     Planboard.prototype.initCells = function() {
     
         // todo call ajax for this...
-        var veuri = this.config.uri.ve;
+        var rowdataUri = this.config.uri.rowdata;
         var me = this;
-        $.get(veuri, function(d,s,x){ ajaxReturnVE(me, d, s, x);}, "json");
+        $.get(rowdataUri, function(d,s,x){ ajaxLoadedRows(me, d, s, x);}, "json");
         
         //appendCols
         this.appendCol(this.config.initDayCount);
@@ -246,7 +246,71 @@
     function monthClass(m) {
         return "m"+ (1 + m) % 2;
     };
+   
+   
+    var DATEPATTERN_RE = /(\d{2,4})-(\d{1,2})-(\d{1,2})/;
+    Planboard.string2Date = function(str) {
+        var match = str.match(DATEPATTERN_RE);
+        if (match === null) {
+            return null;
+        }
+        return new Date(match[1], match[2] - 1, match[3]);
+    }
     
+    Planboard.prototype.addPeriod = function(period) {
+    
+        if (!this.periods) {
+            this.periods = {};
+        }
+        
+        if (this.periods[period.id]) { // the period was already added before
+            return;  // TODO maybe consider re-adding periods with changed aatributes
+        }
+        
+        var fromnum = Planboard.date2Num(Planboard.string2Date(period.from));
+        var tillnum = Planboard.date2Num(Planboard.string2Date(period.till));
+        
+        if (tillnum < this.cols.firstnum || fromnum > this.cols.lastnum) {
+            return;
+        }
+        
+        var days = 1 + tillnum - fromnum;
+        var anchornum = Math.max(this.cols.firstnum, fromnum);
+        var offdays = fromnum - anchornum;
+        
+        var width = days * this.config.unitsize;
+        var offset = offdays * this.config.unitsize;
+        
+        var headId = toCellId("", anchornum);
+        var $anchor = this.$days.find("#" + headId);
+        period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + period.label + "</div>");
+        $anchor.append(period.$elm);
+        
+        this.periods[period.id] = period;
+    } 
+    
+   
+    function ajaxLoadedPeriods(board, data, textStatus, jqXhr) {
+    
+        board.$periods.html(""); // clear current periods // TODO is this needed?
+        
+        var size = data.length;
+        for (i=0; i<size; i++) {
+            board.addPeriod(data[i]);
+        }
+    }
+    
+    Planboard.prototype.loadPeriods = function(firstnum, lastnum) {
+    
+        // todo do something with the passed arguments towards calling the backend!
+        
+        var perioduri = this.config.uri.period;
+        var me = this;
+        $.get(perioduri, function(d,s,x){ ajaxLoadedPeriods(me, d, s, x);}, "json");
+        
+    } 
+    
+         
     Planboard.prototype.updateMonths = function() {
         
         if (!this.cols) {
@@ -256,6 +320,9 @@
 
         var fDateNum = this.cols.firstnum;
         var lDateNum = this.cols.lastnum;
+        
+        this.loadPeriods();
+        
         var cfDateNum = fDateNum; //current month first
         
         do {
@@ -431,7 +498,7 @@
     
     
     function toCellId(code, num) {
-        return code + "#" + num;
+        return code + "_" + num;
     }
     
     

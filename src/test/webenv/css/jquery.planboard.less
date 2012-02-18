@@ -9,7 +9,7 @@
 @coreHeight:  @unitHeight - (@unitBorder);
 @coreWidth:   @unitWidth - (@unitBorder);
 
-@monthHeight: 15px;
+@monthHeight: 25px;
 
 
 
@@ -37,6 +37,8 @@
 @wem0BackColor:          desaturate(@m0BackColor, 80%);
 @wem1BackColor:          desaturate(@m1BackColor, 80%);
 
+@periodBackColor:        darken(spin(@pbPaleColor, 330), 10%);
+
 
 /* snippet from hs2 sample */
 @DefaultRadius: 8px;
@@ -44,6 +46,19 @@
     -moz-border-radius: @Radius;
     -webkit-border-radius: @Radius;
 }
+
+.top-border-radius(@Radius: @DefaultRadius) {
+    -moz-border-radius-topleft: @Radius;
+    -moz-border-radius-topright: @Radius;
+    -moz-border-radius-bottomright: 0;
+    -moz-border-radius-bottomleft: 0;
+
+    -webkit-border-top-left-radius: @Radius;
+    -webkit-border-top-right-radius: @Radius;
+    -webkit-border-bottom-right-radius: 0;
+    -webkit-border-bottom-left-radius: 0;    
+}
+
 @ReservationColor:        fadeout(darken(spin(#f00, 5), 20%), 20%);
 @OptionColor:             spin(@ReservationColor, 33);
 @BlockColor:              darken(#f11, 90%);
@@ -58,7 +73,7 @@
     text-align:         center;
     font-size:          0.8em;
     font-family:        sans-serif;
-    overflow:           none;
+    overflow:           hidden;
 
     .r0 {  
         background-color: @r0BackColor;
@@ -69,7 +84,8 @@
         
     .uc {
         border-left:    @unitBorder solid black;
-        overflow:       hidden;
+        overflow:       visible;
+        overflow-y:     visible;
     }
     .uc:first-child {
         border-top:     @unitBorder solid black;
@@ -77,9 +93,11 @@
     .u {
         border-bottom:  @unitBorder solid black;
         border-right:   @unitBorder dashed black;
-        overflow:       hidden;
+        overflow:       visible;
+        overflow-y:     visible;
         float:          left;
         line-height:    @unitHeight;
+        position:       relative;
 
         &.r0 {  
             background-color: @r0BackColor;
@@ -109,6 +127,16 @@
         &.m1.we {
             background-color:  @wem1BackColor;
         }
+        
+        .period {
+            .top-border-radius(@monthHeight);
+            position:         absolute;
+            top:              -2 * @monthHeight;
+            height:           110px;
+            padding-top:      5px;
+            background-color: @periodBackColor;
+            overflow:         hidden;
+        }
     }
 
     .months {
@@ -116,10 +144,11 @@
         height: @monthHeight;
 
         .month {
-            .border-radius(@monthHeight);
+            .top-border-radius(@monthHeight);
             float: left;
             overflow: hidden;
-            height: 2*@monthHeight;
+            height: @monthHeight;
+            padding-top: 5px;
             border: 1px dashed black;
 
             /* m0 is default */
@@ -135,7 +164,7 @@
     .north, .south, .east, .west, .equator, .meridian {
         float:          left;
         text-align:     center;
-        overflow:       hidden;
+        overflow:       visible;
         position:       relative;
     }
     .north, .south {
@@ -148,7 +177,7 @@
             line-height: @unitHeight * 3 / 4; 
         }
         .periods, .months {
-            height: 15px;
+            height: @monthHeight;
         }
         &.east {
             button.colAppend {
