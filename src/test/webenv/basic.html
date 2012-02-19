@@ -20,7 +20,13 @@
   <SCRIPT TYPE="text/javascript" >
     ;(function($) {
         $(document).ready( function() {
-            $('div#planboard').planboard({"uri": {"rowdata": "./data/ve.json", "period": "./data/period.json"}});
+            $('div#planboard').planboard({
+                "uri": {
+                    "rowdata":    "./data/ve.json", 
+                    "period":     "./data/period.json", 
+                    "allocation": "./data/preservation.json"
+                }
+            });
         });
     }(jQuery));
   </SCRIPT>

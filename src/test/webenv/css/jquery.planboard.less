@@ -28,17 +28,21 @@
 
 
 @pbBaseColor:            rgba(255,255,248,1);
+@pbTextColor:            lighten(rgba(0, 0, 7, 1), 15%);
+
 @pbPaleColor:            fadeout(@pbBaseColor, 80%);
 @r0BackColor:            fadein(@pbBaseColor, 100%);
 @r1BackColor:            spin(@r0BackColor, 90);
 
 @m0BackColor:            darken(spin(@pbPaleColor, 15),10%);
+@m0TextColor:            fadein(darken(@m0BackColor, 50%), 100%);
 @m1BackColor:            spin(@m0BackColor, 180);
+@m1TextColor:            fadein(darken(@m1BackColor, 50%), 100%);
 @wem0BackColor:          desaturate(@m0BackColor, 80%);
 @wem1BackColor:          desaturate(@m1BackColor, 80%);
 
 @periodBackColor:        darken(spin(@pbPaleColor, 330), 10%);
-
+@periodTextColor:        fadein(darken(@periodBackColor, 50%), 100%);
 
 /* snippet from hs2 sample */
 @DefaultRadius: 8px;
@@ -74,6 +78,7 @@
     font-size:          0.8em;
     font-family:        sans-serif;
     overflow:           hidden;
+    color:              @pbTextColor;
 
     .r0 {  
         background-color: @r0BackColor;
@@ -135,7 +140,9 @@
             height:           110px;
             padding-top:      5px;
             background-color: @periodBackColor;
+            color:            @periodTextColor;
             overflow:         hidden;
+            font-weight:      bold;
         }
     }
 
@@ -145,17 +152,20 @@
 
         .month {
             .top-border-radius(@monthHeight);
-            float: left;
-            overflow: hidden;
-            height: @monthHeight;
+            float:       left;
+            overflow:    hidden;
+            height:      @monthHeight;
             padding-top: 5px;
-            border: 1px dashed black;
+            border:      1px dashed black;
+            font-weight: bold;
 
             /* m0 is default */
             background-color:  @m0BackColor;
+            color:             @m0TextColor;
 
             &.m1 {
                 background-color:  @m1BackColor;
+                color:             @m1TextColor;
             }
 
         }

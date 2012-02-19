@@ -1,11 +1,9 @@
 //(c) 2012, Marc Portier
-// CC-SA-BY license 3.0 - BE, see 
+// CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
-    
  //TODO
- //3- special-period-heads
  //4- reservation-indications
- //5- ajax calls for data loading --- - periodes - reservaties
+ //5- ajax calls for data loading --- - - reservations
  //6- apis - events - config
  //7- optimise building and general speed + cleanup pcode
  //   (see also code for jsp - samples more hidden variables inside 'create' function, better encapsulation
@@ -17,9 +15,9 @@
  //10 - checkup bouncing around effect upon resize: avoid through absolute position of elements in n-e-s-w-grid
 
  // --
- // filtering nuttige VEs
- // toevoegen vrije VEs
- // selectie periode
+ // filtering rows on metadata? 
+ // dynamically adding rows 
+ // selection of renatal period >> highlighting available rows
  // jump-to-month (6<< en 6>>)
  
 ;
@@ -108,8 +106,8 @@
         // initialise north
         this.$north = $("<div></div>");
         this.$days =$("<div class='uc days'></div>");
-        this.$months =$("<div class='months'>months</div>");
-        this.$periods =$("<div class='periods'>periods</div>");
+        this.$months =$("<div class='months'></div>");
+        this.$periods =$("<div class='periods'></div>");
         this.$north.append(this.$periods).append(this.$months).append(this.$days);
         
         this.$nscroll=$("<div style='width=100%; overflow:auto;margin-right: "+this.config.scrollBarSize+"px'></div>");
@@ -328,6 +326,7 @@
         do {
             var cfDate = Planboard.num2Date(cfDateNum);
             var m = cfDate.getMonth();
+            var fy = cfDate.getFullYear();
             var clDate = new Date(cfDate.getFullYear(), m+1, 0);
             var clDateNum = Planboard.date2Num( clDate ); // last of this month == zeroth of next month
             var clDateNum = Math.min(clDateNum, lDateNum); // trim to the end of the board
@@ -336,7 +335,7 @@
             var width = this.config.unitsize * days - 2;
             var mclass = monthClass(m);
 
-            monthsHtml += "<div class='month " + mclass + "' style='width: " + width + "px;'>" + this.config.monthnames[m] + "</div>";
+            monthsHtml += "<div class='month " + mclass + "' style='width: " + width + "px;'>" + this.config.monthnames[m] + " " + fy + "</div>";
             
             cfDateNum = clDateNum + 1; // first of next month
         } while (cfDateNum  < lDateNum);
