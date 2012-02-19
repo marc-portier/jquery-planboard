@@ -63,11 +63,6 @@
     -webkit-border-bottom-left-radius: 0;    
 }
 
-@ReservationColor:        fadeout(darken(spin(#f00, 5), 20%), 20%);
-@OptionColor:             spin(@ReservationColor, 33);
-@BlockColor:              darken(#f11, 90%);
-@AllotmentColor:          spin(@ReservationColor, 225);
-
 /* end snippet from hs2 sample */
 
 .planboard {
@@ -89,8 +84,7 @@
         
     .uc {
         border-left:    @unitBorder solid black;
-        overflow:       visible;
-        overflow-y:     visible;
+        overflow:       hidden;
     }
     .uc:first-child {
         border-top:     @unitBorder solid black;
@@ -143,6 +137,7 @@
             color:            @periodTextColor;
             overflow:         hidden;
             font-weight:      bold;
+            z-index:          1;
         }
     }
 
@@ -171,6 +166,28 @@
         }
     }
     
+    .board {
+        .u.h.w {
+            position: relative;
+            
+            .alloc {
+                .border-radius();
+                position: absolute;
+                background-color: rgba(50,50,50,0.5);
+                background: url('../img/button-top-glow.png');
+                background-repeat: repeat-x;
+/*                background-position: 0px 0px;*/
+                height:  24px;
+                top:     4px;
+                overflow: hidden;
+                color: white;
+                font-size: 0.85em;
+                line-height: 28px;
+                z-index:     1;
+            }
+        }
+    }
+    
     .north, .south, .east, .west, .equator, .meridian {
         float:          left;
         text-align:     center;
@@ -182,6 +199,11 @@
     .east, .west {
     }
     .north {
+        overflow: hidden;
+        
+        .uc {
+            overflow: visible;
+        }
         .u.w {
             /* height: @northScrollHeight - @jspSize - 2 * (@unitBorder); */
             line-height: @unitHeight * 3 / 4; 
@@ -216,5 +238,38 @@
     .east {
         float:          right;
         text-align:     right;
+    }
+}
+
+.jspVerticalBar, .jspHorizontalBar {
+    z-index: 2;
+}
+
+/*
+TODO move this into customization/usage seperate css
+*/
+@ReservationColor:        fadeout(#ff0000, 20%); /* fadeout(saturate(darken(spin(#f00, 0), 10%), 100%), 25%); */
+@OptionColor:             fadeout(#fce94f, 20%); /* spin(@ReservationColor, 33);   */
+@BlockColor:              fadeout(#5c3566, 20%); /* darken(#f11, 90%);             */
+@AllotmentColor:          fadeout(#8ae234, 20%); /* spin(@ReservationColor, 225);  */
+.planboard .board .u.h.w .alloc {
+    &.reservation {
+        background-color: @ReservationColor;
+        color: fadein(darken(spin(@ReservationColor, 0), 40%), 100%);
+    }
+
+    &.option {
+        background-color: @OptionColor;
+        color: fadein(darken(spin(@OptionColor, 0), 40%), 100%);
+    }
+
+    &.block {
+        background-color: @BlockColor;
+        color: fadein(lighten(spin(@BlockColor, 0), 70%), 100%);
+    }
+
+    &.allotment {
+        background-color: @AllotmentColor;
+        color: fadein(darken(spin(@AllotmentColor, 0), 40%), 100%);
     }
 }

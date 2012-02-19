@@ -2,13 +2,12 @@
 // CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
  //TODO
- //4- reservation-indications
- //5- ajax calls for data loading --- - - reservations
+ //  show period highlights in the board too
+ //  horizontal scroll-bar-size-mismatch when periods extend size of date-range
  //6- apis - events - config
  //7- optimise building and general speed + cleanup pcode
- //   (see also code for jsp - samples more hidden variables inside 'create' function, better encapsulation
+ //   (see also code for jsp-scroll: it samples more hidden variables inside 'create' function, better encapsulation
  //    jquery tricks: add elms through HTML generation then lookup by id or class.
- //    some more lambda functions here and there)
  //    work less with dates, but rather with the datenums, only convert for visualization
  //8- tools & buttons:  select new period - pan? - find free wizard - add VE, add dates
  //9- visualisation: statusbar - loading - elements
@@ -135,7 +134,7 @@
         this.$ew.append(this.$wscroll);
         
         //initialise center
-        this.$center =$("<div></div>");
+        this.$center =$("<div class='board'></div>");
         this.$cscroll=$("<div style='overflow:auto;'></div>");
         this.$cscroll.width(this.config.westScrollWidth);
         this.$cscroll.height(this.config.northScrollHeight);
@@ -262,7 +261,7 @@
         }
         
         if (this.periods[period.id]) { // the period was already added before
-            return;  // TODO maybe consider re-adding periods with changed aatributes
+            return;  // TODO maybe consider re-adding periods with changed attributes
         }
         
         var fromnum = Planboard.date2Num(Planboard.string2Date(period.from));
@@ -308,18 +307,78 @@
         
     } 
     
-         
-    Planboard.prototype.updateMonths = function() {
+
+    Planboard.prototype.addAlloc = function(alloc) {
+
+        if (!this.allocs) {
+            this.allocs = {};
+        }
+        
+        if (this.allocs[alloc.id]) { // the period was already added before
+            return;  // TODO maybe consider re-adding allocs with changed attributes
+        }
+        
+        var fromnum = Planboard.date2Num(Planboard.string2Date(alloc.from));
+        var tillnum = Planboard.date2Num(Planboard.string2Date(alloc.till));
+        
+        if (tillnum < this.cols.firstnum || fromnum > this.cols.lastnum) {
+            return;
+        }
+        
+        var days = tillnum - fromnum; // no +1 here // unlike for periods: since allocs-end-dates are exclusive TODO make configurable
+        var anchornum = Math.max(this.cols.firstnum, fromnum);
+        var offdays = fromnum - anchornum + 0.5; //shift halfdays for night reservations TODO make configurable?
+        
+        var width = days * this.config.unitsize;
+        var offset = offdays * this.config.unitsize;
+        
+        var anchorcode = alloc.ve;  // TODO make configurable property!
+        
+        var cellId = toCellId(anchorcode, anchornum);
+        var cellClass = "alloc" + " " + alloc.type;  // TODO make class property configurable ? callback?
+        
+        var $anchor = this.$center.find("#" + cellId);
+        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'>" + alloc.label + "</div>"); // TODO per 42 units add an extra label-span
+        $anchor.append(alloc.$elm);
+        
+        this.allocs[alloc.id] = alloc;
+    } 
+    
+   
+    function ajaxLoadedAllocs(board, data, textStatus, jqXhr) {
+        var size = data.length;
+        for (i=0; i<size; i++) {
+            board.addAlloc(data[i]);
+        }
+    }
+    
+    Planboard.prototype.loadAllocs = function(firstnum, lastnum) {
+        // todo do something with the passed arguments towards calling the backend!
+        
+        var perioduri = this.config.uri.allocation;
+        var me = this;
+        $.get(perioduri, function(d,s,x){ ajaxLoadedAllocs(me, d, s, x);}, "json");
+    } 
+    
+    Planboard.prototype.updateTimes  = function() {
         
         if (!this.cols) {
             return;
         }
-        var monthsHtml = "";
 
         var fDateNum = this.cols.firstnum;
         var lDateNum = this.cols.lastnum;
         
-        this.loadPeriods();
+        this.loadPeriods(fDateNum, lDateNum);
+        this.loadAllocs(fDateNum, lDateNum);
+        this.updateMonths(fDateNum, lDateNum);
+    }
+         
+    Planboard.prototype.updateMonths = function(fDateNum, lDateNum) {
+        var monthsHtml = "";
+
+        var fDateNum = this.cols.firstnum;
+        var lDateNum = this.cols.lastnum;
         
         var cfDateNum = fDateNum; //current month first
         
@@ -332,24 +391,24 @@
             var clDateNum = Math.min(clDateNum, lDateNum); // trim to the end of the board
 
             var days = 1 + clDateNum - cfDateNum;
-            var width = this.config.unitsize * days - 2;
+            var width = this.config.unitsize * days - 2; // 2 px for the border
             var mclass = monthClass(m);
 
             monthsHtml += "<div class='month " + mclass + "' style='width: " + width + "px;'>" + this.config.monthnames[m] + " " + fy + "</div>";
             
             cfDateNum = clDateNum + 1; // first of next month
-        } while (cfDateNum  < lDateNum);
+        } while (cfDateNum  <= lDateNum);
         this.$months.html(monthsHtml);        
     }
      
     Planboard.prototype.appendCol = function(count) {
         this._addCol(false,count);
-        this.updateMonths();
+        this.updateTimes();
     };
     
     Planboard.prototype.prependCol = function(count) {
         this._addCol(true,count);
-        this.updateMonths();
+        this.updateTimes();
     }
     
     Planboard.prototype._addCol = function(prepend, count) {
