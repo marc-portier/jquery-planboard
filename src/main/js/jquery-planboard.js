@@ -2,7 +2,6 @@
 // CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
  //TODO
- //  show period highlights in the board too
  //6- apis - events - config
  //7- optimise building and general speed + cleanup pcode
  //   (see also code for jsp (jq-scroll-pane): it samples more hidden variables inside 'create' function, better encapsulation
@@ -259,6 +258,7 @@
     
         if (!this.periods) {
             this.periods = {};
+            this.periodnums = {};
         }
         
         if (this.periods[period.id]) { // the period was already added before
@@ -284,6 +284,14 @@
         period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + period.label + "</div>");
         $anchor.append(period.$elm);
         
+        // mark periods on board
+        var num;
+        for (num = fromnum; num <= tillnum; num++) {
+            this.periodnums[num] = period;
+            var lookup = ".cell.num_" + num;
+            var $cells =  this.$board.find(lookup);
+            $cells.addClass('pmark');
+        }    
         this.periods[period.id] = period;
     } 
     
@@ -489,8 +497,7 @@
             var code;
             for (code in allRows.bycode) {
                 var row = allRows.bycode[code];
-                
-                newCell(row.code, this.datenum, row, this, prepend);
+                board.newCell(row.code, this.datenum, row, this, prepend);
             }
         }
     }
@@ -552,7 +559,7 @@
         var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
         for (colnum=firstnum; colnum <= lastnum; colnum++) {
             var col = allCols.bynum[colnum];
-            newCell(this.code, colnum, this, col);
+            board.newCell(this.code, colnum, this, col);
         }
     }
     
@@ -563,11 +570,15 @@
     
     
     //TODO change this into HTML production
-    function newCell(code, num, row, col, prepend) {
+    Planboard.prototype.newCell = function(code, num, row, col, prepend) {
         prepend = prepend || false;
         
         var cellId = toCellId(code, num);
-        var $cell = $("<div class='u h w " + col.classes.join(" ") + "' id='"+cellId+"'>&nbsp;</div>");
+        var cellClass = "cell num_" + num;
+        if (this.periodnums && this.periodnums[num]) {
+            cellClass += " pmark";
+        }        
+        var $cell = $("<div class='u h w " + col.classes.join(" ") + "' id='"+cellId+"'><div class='"+cellClass+"'>&nbsp;</div></div>");
         if (prepend) {
             row.$row.prepend($cell);
         } else {

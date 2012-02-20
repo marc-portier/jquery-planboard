@@ -89,6 +89,7 @@
     .uc:first-child {
         border-top:     @unitBorder solid black;
     }
+
     .u {
         border-bottom:  @unitBorder solid black;
         border-right:   @unitBorder dashed black;
@@ -109,6 +110,14 @@
             height:         @coreHeight;
         }
         &.w {
+            width:          @coreWidth;
+        }      
+        .cell {
+            &.pmark {
+                background-color: @periodBackColor;
+                z-index:          1;
+            }
+            height:         @coreHeight;
             width:          @coreWidth;
         }
         
