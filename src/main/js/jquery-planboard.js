@@ -3,10 +3,9 @@
 
  //TODO
  //  show period highlights in the board too
- //  horizontal scroll-bar-size-mismatch when periods extend size of date-range
  //6- apis - events - config
  //7- optimise building and general speed + cleanup pcode
- //   (see also code for jsp-scroll: it samples more hidden variables inside 'create' function, better encapsulation
+ //   (see also code for jsp (jq-scroll-pane): it samples more hidden variables inside 'create' function, better encapsulation
  //    jquery tricks: add elms through HTML generation then lookup by id or class.
  //    work less with dates, but rather with the datenums, only convert for visualization
  //8- tools & buttons:  select new period - pan? - find free wizard - add VE, add dates
@@ -104,10 +103,12 @@
         
         // initialise north
         this.$north = $("<div></div>");
+        this.$colhead = $("<div style='overflow: hidden'></div>");
         this.$days =$("<div class='uc days'></div>");
         this.$months =$("<div class='months'></div>");
         this.$periods =$("<div class='periods'></div>");
-        this.$north.append(this.$periods).append(this.$months).append(this.$days);
+        this.$colhead.append(this.$periods).append(this.$months).append(this.$days);
+        this.$north.append(this.$colhead);
         
         this.$nscroll=$("<div style='width=100%; overflow:auto;margin-right: "+this.config.scrollBarSize+"px'></div>");
         this.$nscroll.height(this.config.northScrollHeight);
@@ -448,6 +449,7 @@
         var newWidth =  1 + this.cols.count * (this.config.unitsize);
         var oldWidth = this.$north.width();
         
+        this.$colhead.width(newWidth);
         this.$north.width(newWidth);
         this.$center.width(newWidth);
         
