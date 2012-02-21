@@ -22,10 +22,11 @@
         $(document).ready( function() {
             $('div#planboard').planboard({
                 "uri": {
-                    "rowdata":    "./data/ve.json", 
-                    "period":     "./data/period.json", 
-                    "allocation": "./data/reservation.json"
-                }
+                    "rowdata":        "./data/ve.json", 
+                    "period":         "./data/period.json", 
+                    "allocation":     "./data/reservation.json"
+                },
+                "allocRowProperty":   "ve"
             });
         });
     }(jQuery));

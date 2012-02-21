@@ -68,14 +68,57 @@
     }
     
     Planboard.config = {
-        jScrollPane:       {showArrows: true},
-        northScrollHeight: "115px",
-        westScrollWidth:   "95px",
-        datenames:         ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
-        monthnames:        ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"], 
-        addDayCount:       7,
-        initDayCount:      42,
-        scrollBarSize:     16
+        //pass-through options to jsp
+        jScrollPane:         {showArrows: true},
+        //width of vertical - height of horizontal scrollbar
+        scrollBarSize:       16,
+        //fixed dimensions for sections
+        northScrollHeight:   "115px",
+        westScrollWidth:     "95px",
+        //possibility to translate names for days and months
+        datenames:           ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
+        monthnames:          ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", 
+                              "Augustus", "September", "Oktober", "November", "December"], 
+        //number of days to be added when button is pushed
+        addDayCount:         7,
+        //number of days to be added initially
+        initDayCount:        42,
+        //--------------------------------- allocation config
+        // is the end-date inclusive 0=no, 1=yes. 
+        allocInclusive:      0, // allocation times are end-time not inclusive
+        // offset of allocation in grid (e.g. half day offset for hotel-bookings)
+        allocOffset:         0.5,
+        // property of allocation data containing 'from' time
+        allocFromProperty:   "from",
+        // property of allocation data containing 't‎ill' time
+        allocTillProperty:   "till",
+        // property of allocation data containing 'identifier' (unique)
+        allocIdProperty:     "id",
+        // property of allocation data containing 'identifier' (unique)
+        allocLabelProperty:  "label",
+        // property of allocation data containing reference to row-identifier
+        allocRowProperty:    "rowid",
+        // property of allocation data containing 'type' (class styling) information
+        allocTypeProperty:   "type",
+
+        //--------------------------------- period config
+        // period times are typically end -time inclusive
+        periodInclusive:     1, 
+        // property of period data containing 'from' time
+        periodFromProperty:  "from",
+        // property of period data containing 'till' time
+        periodTillProperty:  "till",
+        // property of period data containing 'identifier'
+        periodIdProperty:    "id",
+        // property of period data containing 'label'
+        periodLabelProperty: "label",
+        
+        
+        //--------------------------------- row config
+        // property of row data containing 'identifier'
+        rowIdProperty:       "id",
+        // property of row data containing 'label'
+        rowLabelProperty:    "label"
     }
     
 
@@ -202,16 +245,18 @@
         }
     }
     
-    Planboard.prototype.initCells = function() {
-    
-        // todo call ajax for this...
+    Planboard.prototype.loadRows = function() {
         var rowdataUri = this.config.uri.rowdata;
         var me = this;
         $.get(rowdataUri, function(d,s,x){ ajaxLoadedRows(me, d, s, x);}, "json");
+    }
+    
+    Planboard.prototype.initCells = function() {
+    
+        this.loadRows();    
         
         //appendCols
         this.appendCol(this.config.initDayCount);
-
     };
     
     
@@ -261,18 +306,19 @@
             this.periodnums = {};
         }
         
-        if (this.periods[period.id]) { // the period was already added before
+        var id = period[this.config.periodIdProperty];
+        if (this.periods[id]) { // this period was already added before
             return;  // TODO maybe consider re-adding periods with changed attributes
         }
         
-        var fromnum = Planboard.date2Num(Planboard.string2Date(period.from));
-        var tillnum = Planboard.date2Num(Planboard.string2Date(period.till));
+        var fromnum = Planboard.date2Num(Planboard.string2Date(period[this.config.periodFromProperty]));
+        var tillnum = Planboard.date2Num(Planboard.string2Date(period[this.config.periodTillProperty]));
         
         if (tillnum < this.cols.firstnum || fromnum > this.cols.lastnum) {
             return;
         }
         
-        var days = 1 + tillnum - fromnum;
+        var days = this.config.periodInclusive + tillnum - fromnum;
         var anchornum = Math.max(this.cols.firstnum, fromnum);
         var offdays = fromnum - anchornum;
         
@@ -281,24 +327,24 @@
         
         var headId = toCellId("", anchornum);
         var $anchor = this.$days.find("#" + headId);
-        period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + period.label + "</div>");
+        period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + period[this.config.periodLabelProperty] + "</div>");
         $anchor.append(period.$elm);
         
         // mark periods on board
         var num;
         for (num = fromnum; num <= tillnum; num++) {
-            this.periodnums[num] = period;
+            this.periodnums[num] = period; // TODO: list all periods through this date - and upon chech look for the size of the array
             var lookup = ".cell.num_" + num;
             var $cells =  this.$board.find(lookup);
             $cells.addClass('pmark');
         }    
-        this.periods[period.id] = period;
+        this.periods[id] = period;
     } 
     
    
     function ajaxLoadedPeriods(board, data, textStatus, jqXhr) {
     
-        board.$periods.html(""); // clear current periods // TODO is this needed?
+        board.$periods.html(""); // clear current periods 
         
         var size = data.length;
         for (i=0; i<size; i++) {
@@ -323,34 +369,35 @@
             this.allocs = {};
         }
         
-        if (this.allocs[alloc.id]) { // the period was already added before
+        var id = alloc[this.config.allocIdProperty];
+        if (this.allocs[id]) { // this alloc was already added before
             return;  // TODO maybe consider re-adding allocs with changed attributes
         }
         
-        var fromnum = Planboard.date2Num(Planboard.string2Date(alloc.from));
-        var tillnum = Planboard.date2Num(Planboard.string2Date(alloc.till));
+        var fromnum = Planboard.date2Num(Planboard.string2Date(alloc[this.config.allocFromProperty]));
+        var tillnum = Planboard.date2Num(Planboard.string2Date(alloc[this.config.allocTillProperty]));
         
         if (tillnum < this.cols.firstnum || fromnum > this.cols.lastnum) {
             return;
         }
         
-        var days = tillnum - fromnum; // no +1 here // unlike for periods: since allocs-end-dates are exclusive TODO make configurable
+        var days = tillnum - fromnum + this.config.allocInclusive; 
         var anchornum = Math.max(this.cols.firstnum, fromnum);
-        var offdays = fromnum - anchornum + 0.5; //shift halfdays for night reservations TODO make configurable?
+        var offdays = fromnum - anchornum + this.config.allocOffset; 
         
         var width = days * this.config.unitsize;
         var offset = offdays * this.config.unitsize;
         
-        var anchorcode = alloc.ve;  // TODO make configurable property!
+        var anchorcode = alloc[this.config.allocRowProperty];
         
         var cellId = toCellId(anchorcode, anchornum);
-        var cellClass = "alloc" + " " + alloc.type;  // TODO make class property configurable ? callback?
+        var cellClass = "alloc" + " " + alloc[this.config.allocTypeProperty];
         
         var $anchor = this.$center.find("#" + cellId);
-        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'>" + alloc.label + "</div>"); // TODO per 42 units add an extra label-span
+        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'>" + alloc[this.config.allocLabelProperty] + "</div>"); // TODO per 42 units add an extra label-span
         $anchor.append(alloc.$elm);
         
-        this.allocs[alloc.id] = alloc;
+        this.allocs[id] = alloc;
     } 
     
    
@@ -511,8 +558,8 @@
         }
         
         //TODO make the fields to use as code & label configurable!
-        var code = rowData.id;
-        var label = rowData.label;
+        var code = rowData[this.config.rowIdProperty];
+        var label = rowData[this.config.rowLabelProperty];
         
         var newRow = this.rows.bycode[code];
         if (newRow) {  // already exists! 
