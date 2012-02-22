@@ -12,9 +12,9 @@
  //10 - checkup bouncing around effect upon resize: avoid through absolute position of elements in n-e-s-w-grid
 
  // --
- // filtering rows on metadata? 
+ // filtering/hiding/removing rows on metadata? 
  // dynamically adding rows 
- // selection of renatal period >> highlighting available rows
+ // selection of rental period >> highlighting available rows
  // jump-to-month (6<< en 6>>)
  
 ;
@@ -79,9 +79,11 @@
         datenames:           ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
         monthnames:          ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", 
                               "Augustus", "September", "Oktober", "November", "December"], 
-        //number of days to be added when button is pushed
+        // number of days between suggested repeats of labels in allocs
+        labelRepeatDayCount:     28, 
+        // number of days to be added when button is pushed
         addDayCount:         7,
-        //number of days to be added initially
+        // number of days to be added initially
         initDayCount:        42,
         //--------------------------------- allocation config
         // is the end-date inclusive 0=no, 1=yes. 
@@ -191,7 +193,16 @@
         this.$board.addClass("planboard").html("")
             .append(this.$NO).append(this.$EQ).append(this.$SO);
 
-
+        // initialise south
+        this.$status = $("<div class='status'>&nbsp;</div>");
+        this.$sm.append(this.$status);
+        
+        // initialise east
+        this.$tools = $("<div class='tools'></div>");
+        var $pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDate()});
+        this.$tools.append($pickDate);
+        this.$ee.append(this.$tools);
+        
         //probe sizes
         if (!this.config.unitsize) {
             this.$center.html("<div class='uc'><div class='u h w'>0</div></div>");
@@ -209,11 +220,27 @@
         
         // size up and redo that upon resize
         this.initSize();
-        
         var me = this;
         $(window).resize(function(){me.initSize()});
+        
+        //start Select mode
+        this.startSelecting();
     }
 
+
+    Planboard.prototype.pickDate = function() {
+        this.setStatus("TODO: show date picker popup, read given date, reinit the board for that date...");
+    }
+    
+    Planboard.prototype.setStatus = function(msg) {
+        this.$status.html(msg);
+    }
+    
+    Planboard.prototype.startSelecting = function() {
+        this.setStatus("TODO: implement selecting modus");
+    }
+    
+    
     function jspHookup(axis, $el1, $el2) {
         var ap1 = $el1.data('jsp');
         var ap2 = $el2.data('jsp');
@@ -394,7 +421,16 @@
         var cellClass = "alloc" + " " + alloc[this.config.allocTypeProperty];
         
         var $anchor = this.$center.find("#" + cellId);
-        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'>" + alloc[this.config.allocLabelProperty] + "</div>"); // TODO per 42 units add an extra label-span
+        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'></div>"); // TODO per 42 units add an extra label-span 
+        var labels = "";
+        var repeatDays = this.config.labelRepeatDayCount;
+        var times = Math.floor(days / repeatDays) + 1;
+        var repeatWidth = Math.min(width, repeatDays * this.config.unitsize);
+        var n;
+        for (n=0; n<times; n++) {
+            labels += "<div style='float: left; width: "+repeatWidth+"px'>" + alloc[this.config.allocLabelProperty] + "</div>";
+        }
+        alloc.$elm.html(labels);
         $anchor.append(alloc.$elm);
         
         this.allocs[id] = alloc;

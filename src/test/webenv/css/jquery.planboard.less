@@ -4,10 +4,12 @@
 @jspSize:           16px;
         
 @unitBorder:  1px;
-@unitHeight:  32px;
-@unitWidth:   32px;
+@unitSize:    32px;
+@unitHeight:  @unitSize;
+@unitWidth:   @unitSize;
 @coreHeight:  @unitHeight - (@unitBorder);
 @coreWidth:   @unitWidth - (@unitBorder);
+@toolSize:    @unitSize;
 
 @monthHeight: 25px;
 
@@ -194,6 +196,24 @@
                 z-index:     1;
             }
         }
+    }
+    
+    .tools {
+        .tool {
+            vertical-align:  middle;
+            text-align:      center;
+            height:          @toolSize;
+            width:           @toolSize;
+        }
+    }
+    
+    .status {
+        overflow: hidden;
+        background-color: #eef;
+        text-align: left;
+        padding-left: 2em;
+        padding-right: 2em;
+        font-style: italic;
     }
     
     .north, .south, .east, .west, .equator, .meridian {
