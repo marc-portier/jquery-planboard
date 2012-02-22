@@ -204,6 +204,8 @@
             text-align:      center;
             height:          @toolSize;
             width:           @toolSize;
+            clear:           both;
+            float:           left;
         }
     }
     
@@ -239,14 +241,16 @@
         }
         &.east {
             button.colAppend {
-                height: @northScrollHeight - @scrollBarSize;
-                float: left;
+                height: @toolSize;
+                width:  @toolSize;
+                float:  left;
             }
         }
         &.west {
             button.colPrepend {
-                height: @northScrollHeight - @scrollBarSize;
-                float: right;
+                height:       @toolSize;
+                width:        @toolSize;
+                float:        right;
                 margin-right: @scrollBarSize;
             }
         }

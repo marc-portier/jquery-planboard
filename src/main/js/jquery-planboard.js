@@ -2,21 +2,22 @@
 // CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
  //TODO
- //6- apis - events - config
- //7- optimise building and general speed + cleanup pcode
+ //1- tools & buttons:  implement the added ones, think about more?
+ // filtering/hiding/removing rows on metadata? 
+ // dynamically adding rows 
+ //2- selection mode implementation
+ // selection of rental period >> highlighting available rows 
+ //3- apis - events - config
+ //4- optimise building and general speed + cleanup pcode
  //   (see also code for jsp (jq-scroll-pane): it samples more hidden variables inside 'create' function, better encapsulation
  //    jquery tricks: add elms through HTML generation then lookup by id or class.
  //    work less with dates, but rather with the datenums, only convert for visualization
- //8- tools & buttons:  select new period - pan? - find free wizard - add VE, add dates
- //9- visualisation: statusbar - loading - elements
- //10 - checkup bouncing around effect upon resize: avoid through absolute position of elements in n-e-s-w-grid
+ //5- visualisation: loading - elements
 
  // --
- // filtering/hiding/removing rows on metadata? 
- // dynamically adding rows 
- // selection of rental period >> highlighting available rows
- // jump-to-month (6<< en 6>>)
- 
+ // think dependencies: default css to be overriden should be in src/main
+ // less should be compiled
+ // js should be minified
 ;
 ( function( $) {
 
@@ -199,8 +200,10 @@
         
         // initialise east
         this.$tools = $("<div class='tools'></div>");
-        var $pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDate()});
-        this.$tools.append($pickDate);
+        var $pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDateTool()});
+        var $moreRows = $("<button class='tool'>M</button>").click(function() {me.moreRowsTool()});
+        var $hideRows = $("<button class='tool'>H</button>").click(function() {me.hideRowsTool()});
+        this.$tools.append($pickDate).append($moreRows).append($hideRows);
         this.$ee.append(this.$tools);
         
         //probe sizes
@@ -227,10 +230,6 @@
         this.startSelecting();
     }
 
-
-    Planboard.prototype.pickDate = function() {
-        this.setStatus("TODO: show date picker popup, read given date, reinit the board for that date...");
-    }
     
     Planboard.prototype.setStatus = function(msg) {
         this.$status.html(msg);
@@ -238,6 +237,18 @@
     
     Planboard.prototype.startSelecting = function() {
         this.setStatus("TODO: implement selecting modus");
+    }
+
+    Planboard.prototype.pickDateTool = function() {
+        this.setStatus("TODO: show date picker popup, read given date, reinit the board for that date...");
+    }
+    
+    Planboard.prototype.moreRowsTool = function() {
+        this.setStatus("TODO: show selector dialog to obtain more rows, then load them");
+    }
+    
+    Planboard.prototype.hideRowsTool = function() {
+        this.setStatus("TODO: show selectors in rows to indicate which ones to remove");
     }
     
     
@@ -672,25 +683,33 @@
     
     
     Planboard.prototype.initSize = function() {
-       var noHeight = Math.max.apply(Math, this.$NO.map(function(){return $(this).css('height','').height();}).get());
-       var soHeight = Math.max.apply(Math, this.$SO.map(function(){return $(this).css('height','').height();}).get());
-       var eqHeight = this.$board.height() - (noHeight + soHeight);
-       this.$NO.height(noHeight);
-       this.$SO.height(soHeight);
-       this.$EQ.height(eqHeight);
-       
-       this.$wscroll.height(eqHeight -17);
-       this.$cscroll.height(eqHeight -1);
-       
-       var weWidth = Math.max.apply(Math, this.$WE.map(function(){return $(this).css('width','').width();}).get());
-       var eaWidth = Math.max.apply(Math, this.$EA.map(function(){return $(this).css('width','').width();}).get());
-       var meWidth = this.$board.width() - (weWidth + eaWidth);
-       this.$WE.width(weWidth);
-       this.$EA.width(eaWidth);
-       this.$ME.width(meWidth);
-       
-       //update scroll-bars
-       this.reinitScrollBars();
+        // release after resize
+        this.$board.css('height',''); 
+        this.$board.css('width','');  
+        
+        var noHeight = Math.max.apply(Math, this.$NO.map(function(){return $(this).css('height','').height();}).get());
+        var soHeight = Math.max.apply(Math, this.$SO.map(function(){return $(this).css('height','').height();}).get());
+        var eqHeight = this.$board.height() - (noHeight + soHeight);
+        this.$NO.height(noHeight);
+        this.$SO.height(soHeight);
+        this.$EQ.height(eqHeight);
+        
+        this.$wscroll.height(eqHeight -17);
+        this.$cscroll.height(eqHeight -1);
+
+        var weWidth = Math.max.apply(Math, this.$WE.map(function(){return $(this).css('width','').width();}).get());
+        var eaWidth = Math.max.apply(Math, this.$EA.map(function(){return $(this).css('width','').width();}).get());
+        var meWidth = this.$board.width() - (weWidth + eaWidth);
+        this.$WE.width(weWidth);
+        this.$EA.width(eaWidth);
+        this.$ME.width(meWidth);
+
+        // fixing it to avoid jumping/flashing during resize
+        this.$board.width(this.$board.width());
+        this.$board.height(this.$board.height()); //fixing it for resize
+
+        //update scroll-bars
+        this.reinitScrollBars();
     }
     
     Planboard.prototype.reinitScrollBars = function() {
@@ -703,9 +722,10 @@
         if (!api) { return; };
         api.reinitialise();
     }
+    
     Planboard.prototype.reinitHorizontalScrollBar = function() {
-        reinitBar(this.$cscroll);
-        reinitBar(this.$nscroll);
+        reinitBar(this.$cscroll, true);
+        reinitBar(this.$nscroll, true);
     }
     Planboard.prototype.reinitVerticalScrollBar = function() {
         reinitBar(this.$cscroll);
