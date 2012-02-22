@@ -1,9 +1,43 @@
 jquery based Planboard viewer with events and callbacks for managing planning schedules of many kinds.
 
 
+How can I see this working:
+--------------------------
+- checkout from github
+- open src/test/webenv/basic.html in a browser
+
+(when using chrome be sure to add the switch: --allow-file-access-from-files the current in-browser use of less.js requires that)
 
 
-Using:
+Current state:
+-------------
+WORKING:
+  - visualization of grid, dates, allocations and special periods
+    - including scrolling and resizing effects
+  - possibility to add dates in front and at the back
+
+
+NOT WORKING:
+  - none of the promissed events and callbacks, but feel free to propose some extension points as we go allong
+
+
+DOCS:
+  - we are fully in the 'docs are for wimps' -state :) 
+    no honestly: there is no api yet, the code is small and should be documenting itself at the moment... the only exception is the documentation you are reading now :)
+
+
+YOU:
+  - open for comments and contributions
+
+
+NEXT/TODO:
+  - see javascript file...
+
+
+
+
+This project is Using:
+---------------------
 
 jScrollPane from http://www.kelvinluck.com/assets/jquery/jScrollPane/jScrollPane.html
     github: https://github.com/vitch/jScrollPane
