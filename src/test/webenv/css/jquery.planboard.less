@@ -77,10 +77,10 @@
     overflow:           hidden;
     color:              @pbTextColor;
 
-    .r0 {  
+    .row:nth-child(even) {  
         background-color: @r0BackColor;
     }
-    .r1 {
+    .row:nth-child(odd) {
         background-color: @r1BackColor;
     }
         
@@ -101,10 +101,10 @@
         line-height:    @unitHeight;
         position:       relative;
 
-        &.r0 {  
+        &.row:nth-child(even) {  
             background-color: @r0BackColor;
         }
-        &.r1 {
+        &.row:nth-child(odd) {
             background-color: @r1BackColor;
         }
         

@@ -125,21 +125,21 @@
     }
     
 
-    function createGrid(base) {
-        base.$nw=$("<div class='north west'      ></div>");
-        base.$nm=$("<div class='north meridian'  ></div>");
-        base.$ne=$("<div class='north east'      ></div>");
-        base.$NO=$([]).add(base.$nw).add(base.$nm).add(base.$ne);
+    function createGrid(me) {
+        me.$nw=$("<div class='north west'      ></div>");
+        me.$nm=$("<div class='north meridian'  ></div>");
+        me.$ne=$("<div class='north east'      ></div>");
+        me.$NO=$([]).add(me.$nw).add(me.$nm).add(me.$ne);
 
-        base.$ew=$("<div class='equator west'    ></div>");
-        base.$em=$("<div class='equator meridian'></div>");
-        base.$ee=$("<div class='equator east'    ></div>");
-        base.$EQ=$([]).add(base.$ew).add(base.$em).add(base.$ee);
+        me.$ew=$("<div class='equator west'    ></div>");
+        me.$em=$("<div class='equator meridian'></div>");
+        me.$ee=$("<div class='equator east'    ></div>");
+        me.$EQ=$([]).add(me.$ew).add(me.$em).add(me.$ee);
 
-        base.$sw=$("<div class='south west'      ></div>");
-        base.$sm=$("<div class='south meridian'  ></div>");
-        base.$se=$("<div class='south east'      ></div>");
-        base.$SO=$([]).add(base.$sw).add(base.$sm).add(base.$se);
+        me.$sw=$("<div class='south west'      ></div>");
+        me.$sm=$("<div class='south meridian'  ></div>");
+        me.$se=$("<div class='south east'      ></div>");
+        me.$SO=$([]).add(me.$sw).add(me.$sm).add(me.$se);
     }
     
     Planboard.prototype.init = function() {
@@ -202,8 +202,8 @@
         this.$tools = $("<div class='tools'></div>");
         var $pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDateTool()});
         var $moreRows = $("<button class='tool'>M</button>").click(function() {me.moreRowsTool()});
-        var $hideRows = $("<button class='tool'>H</button>").click(function() {me.hideRowsTool()});
-        this.$tools.append($pickDate).append($moreRows).append($hideRows);
+        this.$hideRows = $("<button class='tool'>H</button>").click(function() {me.hideRowsTool()});
+        this.$tools.append($pickDate).append($moreRows).append(this.$hideRows);
         this.$ee.append(this.$tools);
         
         //probe sizes
@@ -248,7 +248,85 @@
     }
     
     Planboard.prototype.hideRowsTool = function() {
-        this.setStatus("TODO: show selectors in rows to indicate which ones to remove");
+        var me = this;
+        
+        function showSelectors() {
+
+            for (code in me.rows.bycode) {
+                var row = me.rows.bycode[code];
+                var $s = $("<input type='checkbox'>");
+                $s.data('row', row);
+                var $d = $("<div style='position: absolute; left: 0px; top: 2px'></div>").append($s);
+                row.$elm.append($d); // show them
+
+                context.$selects = context.$selects.add($s); // keep ref
+                context.$added = context.$added.add($d); // keep ref
+            }
+            
+            var $ctrl =  $("<div style='position:absolute; bottom: 2px'></div>");
+            var $grp = $("<input type='checkbox'>").change(function() {
+                if ($grp.attr('checked') === 'checked') {       // if grp-selects ON
+                    context.$selects.attr('checked','checked'); // set all selects ON
+                } else {
+                    context.$selects.removeAttr('checked');     // set all selects OFF
+                }
+            });
+            var $ok = $("<button>o</button>").click(function() {
+                doTool();
+                endTool();
+            });
+            var $cancel = $("<button>c</button>").click(function() {
+                endTool();
+            });
+            $ctrl.append($grp).append($ok).append($cancel);
+            me.$nw.append($ctrl);
+            context.$added = context.$added.add($ctrl);
+        }
+        
+        function hideSelectors() {
+            context.$added.remove();
+        }
+        
+        
+        var context;
+        function startTool() {
+            me.$hideRows.html('h'); //TODO some better visual clue 
+            context = {
+                '$selects': $([]), 
+                '$added': $([])
+            };
+            
+            showSelectors();
+
+            me.$hideRows.data('context', context);
+        }
+        
+        function endTool() {
+            me.$hideRows.data('context', null);
+
+            hideSelectors();
+
+            context = null;
+            me.$hideRows.html('H');  //TODO remove visual clue of enabling
+        }
+        
+        function doTool() {
+            context.$selects.each(function() {
+                var $this = $(this);
+                if (!$this.attr('checked')) { return; }
+                
+                var row = $this.data('row');
+                me.removeRow(row);
+            });
+        }
+        
+        //tool-toggle-control
+        context = this.$hideRows.data('context');
+        if (!context) {
+            startTool();
+        } else {
+            endTool();
+        }
     }
     
     
@@ -432,7 +510,7 @@
         var cellClass = "alloc" + " " + alloc[this.config.allocTypeProperty];
         
         var $anchor = this.$center.find("#" + cellId);
-        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'></div>"); // TODO per 42 units add an extra label-span 
+        alloc.$elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'></div>"); 
         var labels = "";
         var repeatDays = this.config.labelRepeatDayCount;
         var times = Math.floor(days / repeatDays) + 1;
@@ -598,8 +676,6 @@
         
     Planboard.prototype.appendRow = function(rowData) {
     
-        // TODO row-code should become ID of some sort, label should be externally added.
-        
         if (this.rows == null) {
             this.rows={ "count" : 0, "bycode" : {}};
         }
@@ -621,9 +697,7 @@
         this.$center.append(newRow.$row);
         
         //resize
-        var newCellWidth = newRow.$elm.width() + 1;
-        var newWidth = Math.max(this.$west.width(), newCellWidth);
-        this.$west.width(newWidth);
+        this.rowHeadResize(newRow);
         
         var newHeight = 1 + this.rows.count * (this.config.unitsize);
         this.$west.height(newHeight);
@@ -633,21 +707,20 @@
     
     function PlanRow(code, label, rowData, board) {
         var allRows   = board.rows;
-        var rowClass  = "r" + (allRows.count % 2);
         
         this.code     = code; //TODO maybe strip spaces?
         this.label    = label;
         this.data     = rowData;
         
         var headId    = toCellId(code, "");
-        this.$elm     = $("<div class='u h "+rowClass+"' id="+headId+">"+this.label+"</div>");
+        this.$elm     = $("<div class='u h row' id="+headId+">"+this.label+"</div>");
         
         // hookup to the planboard structure
         allRows.bycode[code]=this;
         allRows.count++;
         
         var rowId     = toCellId(code, "--");
-        this.$row     = $("<div class='uc "+rowClass+"' id="+rowId+"></div>");
+        this.$row     = $("<div class='uc row' id="+rowId+"></div>");
         //TODO add existing cols to this row >> USE HTML cat for speed!!!
         var allCols = board.cols;
         var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
@@ -656,7 +729,36 @@
             board.newCell(this.code, colnum, this, col);
         }
     }
+
+    Planboard.prototype.removeRow = function(row) {
     
+        if (this.rows == null) { return; }
+        
+        var code = row.code;
+
+        delete this.rows.bycode[code];
+        this.rows.count--;
+        
+        // add visually
+        row.$elm.remove();
+        row.$row.remove();
+        
+        //resize
+        this.rowHeadResize();
+    }
+    
+    Planboard.prototype.rowHeadResize = function(row) {
+        if (row) {
+            var newCellWidth = row.$elm.width() + 1;
+            var newWidth = Math.max(this.$west.width(), newCellWidth);
+            this.$west.width(newWidth);
+        }
+        
+        var newHeight = 1 + this.rows.count * (this.config.unitsize);
+        this.$west.height(newHeight);
+        this.$center.height(newHeight);
+        this.reinitVerticalScrollBar();
+    };
     
     function toCellId(code, num) {
         return code + "_" + num;
