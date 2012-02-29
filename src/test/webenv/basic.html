@@ -1,9 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
-<HTML>
+<HTML LANG="nl">
 <HEAD>
   <TITLE>jquery-planBoard test and demo page</TITLE>
   
+  <link type="text/css" rel="stylesheet"      href="./css/jquery-ui-1.8.13.custom.css'}"  media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.css"         media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.lozenge.css" media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/demo.css"                       media="all" />
@@ -11,26 +12,31 @@
 
   <script type="text/javascript" src="./js/less-1.2.1.min.js"></script>
 
-  <SCRIPT TYPE="text/javascript" SRC="./js/jquery-1.7.1.min.js" ></SCRIPT>
+  <script type="text/javascript" src="./js/jquery-1.7.1.min.js" ></script>
+  <script type="text/javascript" src="./js/jquery-ui-1.8.13.custom.min.js"></script>
+  <script type="text/javascript" src="./js/jquery.ui.datepicker-fr.js"></script>
+  <script type="text/javascript" src="./js/jquery.ui.datepicker-nl.js"></script>
+
   <script type="text/javascript" src="./js/jquery.mousewheel.js"></script>
   <script type="text/javascript" src="./js/jquery.jscrollpane.js"></script>
   
-  <SCRIPT TYPE="text/javascript" SRC="../../main/js/jquery-planboard.js" ></SCRIPT>
+  <script type="text/javascript" src="../../main/js/jquery-planboard.js" ></script>
   
-  <SCRIPT TYPE="text/javascript" >
+  <script type="text/javascript" >
     ;(function($) {
         $(document).ready( function() {
             $('div#planboard').planboard({
                 "uri": {
-                    "rowdata":        "./data/ve.json", 
-                    "period":         "./data/period.json", 
-                    "allocation":     "./data/reservation.json"
+                    "rowdata":          "./data/ve.json", 
+                    "period":           "./data/period.json", 
+                    "allocation":       "./data/reservation.json",
+                    "datePickerImgSrc": "./image/date.png"
                 },
                 "allocRowProperty":   "ve"
             });
         });
     }(jQuery));
-  </SCRIPT>
+  </script>
 
 </HEAD>
 <BODY>
