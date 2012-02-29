@@ -8,6 +8,8 @@
  //2- selection mode implementation
  // selection of rental period >> highlighting available rows 
  //3- apis - events - config
+ //  > docs
+ //  > allow to add tools by moving them in from a passed div#id? or by passing the $tools to a callback
  //4- optimise building and general speed + cleanup pcode
  //   (see also code for jsp (jq-scroll-pane): it samples more hidden variables inside 'create' function, better encapsulation
  //    jquery tricks: add elms through HTML generation then lookup by id or class.
@@ -76,7 +78,9 @@
         //fixed dimensions for sections
         northScrollHeight:   "115px",
         westScrollWidth:     "95px",
-        //possibility to translate names for days and months
+        // language to use- defaults to $('html').attr('lang')
+        lang:               $('html').attr('lang'),
+        //possibility to translate names for days and months >> TODO grab these from jquery-ui-datepicker
         datenames:           ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
         monthnames:          ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", 
                               "Augustus", "September", "Oktober", "November", "December"], 
@@ -116,12 +120,14 @@
         // property of period data containing 'label'
         periodLabelProperty: "label",
         
-        
         //--------------------------------- row config
         // property of row data containing 'identifier'
         rowIdProperty:       "id",
         // property of row data containing 'label'
-        rowLabelProperty:    "label"
+        rowLabelProperty:    "label",
+        
+        // location for date-picker-image
+        datePickerImgSrc:    "./image/date.png"
     }
     
 
@@ -200,10 +206,36 @@
         
         // initialise east
         this.$tools = $("<div class='tools'></div>");
-        var $pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDateTool()});
+
+        var $datePickDiv = $("<div class='tool datepick'></div>");
+        function dateSelected(dateText, inst) {
+            me.gotoDate($datePickDiv.datepicker("getDate"));
+            me.$pickDate.click();
+        }
+        var options = {
+            autoSize: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            numberOfMonths: 2,
+            stepMonths: 2,
+            yearRange: "c-5:c+5",
+            onSelect: dateSelected
+        };
+        var lang = this.config.lang;
+        lang = (lang == 'en' ? '' : lang);
+        $.extend(options, $.datepicker.regional[lang]);
+        $.datepicker.setDefaults(options);
+        this.$tools.append($datePickDiv);
+        $datePickDiv.datepicker();
+
+        $datePickDiv.hide();
+       
+        this.$pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDateTool($datePickDiv)});
         var $moreRows = $("<button class='tool'>M</button>").click(function() {me.moreRowsTool()});
         this.$hideRows = $("<button class='tool'>H</button>").click(function() {me.hideRowsTool()});
-        this.$tools.append($pickDate).append($moreRows).append(this.$hideRows);
+        this.$tools.append(this.$pickDate).append($moreRows).append(this.$hideRows);
+
         this.$ee.append(this.$tools);
         
         //probe sizes
@@ -239,8 +271,17 @@
         this.setStatus("TODO: implement selecting modus");
     }
 
-    Planboard.prototype.pickDateTool = function() {
-        this.setStatus("TODO: show date picker popup, read given date, reinit the board for that date...");
+    Planboard.prototype.pickDateTool = function($div) {
+        if (!$div.data("context") ) {
+            $div.data("context", true);
+            $div.show(); 
+            this.$pickDate.html("d");//TODO better visual
+            $div.css("right", $div.find(".ui-widget").outerWidth() + "px");
+        } else {
+            this.$pickDate.html("D"); //TODO better visual
+            $div.hide();
+            $div.data("context", false);
+        }
     }
     
     Planboard.prototype.moreRowsTool = function() {
@@ -353,6 +394,9 @@
         });
     };
 
+    Planboard.prototype.gotoDate = function(date) {
+        this.setStatus("TODO goto date: " + date);
+    }
 
     function ajaxLoadedRows(board, data, textStatus, jqXhr) {
         var size = data.length;

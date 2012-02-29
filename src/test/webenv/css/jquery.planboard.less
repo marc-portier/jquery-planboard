@@ -199,6 +199,9 @@
     }
     
     .tools {
+        z-index: 3;
+        position: relative;
+        
         .tool {
             vertical-align:  middle;
             text-align:      center;
@@ -206,6 +209,11 @@
             width:           @toolSize;
             clear:           both;
             float:           left;
+        }
+        .datepick {
+            z-index: 3;
+            position: absolute;
+            right: 0px;
         }
     }
     
@@ -274,6 +282,7 @@
 .jspVerticalBar, .jspHorizontalBar {
     z-index: 2;
 }
+
 
 /*
 TODO move this into customization/usage seperate css
