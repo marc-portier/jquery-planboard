@@ -66,6 +66,19 @@
     function Planboard($elm, config) {
         
         this.config = jqMerge(Planboard.config, config);
+
+        var options = this.config.datepicker;
+        var lang = this.config.lang;
+        if (lang != 'en') {
+            $.extend(options, $.datepicker.regional[lang]);
+        } 
+        if (this.config.datenames) {  options.dayNamesMin  = this.config.datenames; }
+        else {                        this.config.datenames  = options.dayNamesMin; }
+        if (this.config.monthnames) { options.monthNames  = this.config.monthnames; }
+        else {                        this.config.monthnames  = options.monthNames; }
+        delete options.onSelect;  // make sure nobody captures this event
+        this.config.datepicker = options; // not setting them as default as not to interfere
+        
         this.$board = $elm;
         this.init();
     }
@@ -73,6 +86,16 @@
     Planboard.config = {
         //pass-through options to jsp
         jScrollPane:         {showArrows: true},
+        // pass-through options to datepicker
+        datepicker:          {
+            autoSize:          true,
+            changeYear:        true,
+            showOtherMonths:   false,
+            selectOtherMonths: true,
+            numberOfMonths:    2,
+            stepMonths:        2,
+            yearRange:         "c-5:c+5"
+        },
         //width of vertical - height of horizontal scrollbar
         scrollBarSize:       16,
         //fixed dimensions for sections
@@ -80,14 +103,14 @@
         westScrollWidth:     "95px",
         // language to use- defaults to $('html').attr('lang')
         lang:               $('html').attr('lang'),
-        //possibility to translate names for days and months >> TODO grab these from jquery-ui-datepicker
-        datenames:           ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"], 
-        monthnames:          ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", 
-                              "Augustus", "September", "Oktober", "November", "December"], 
         // number of days between suggested repeats of labels in allocs
         labelRepeatDayCount:     28, 
         // number of days to be added when button is pushed
         addDayCount:         7,
+        // number of days to be added after selected date
+        daysafter:           14,
+        // number of days to be added before selected date
+        daysbefore:          7,
         // number of days to be added initially
         initDayCount:        42,
         //--------------------------------- allocation config
@@ -209,25 +232,12 @@
 
         var $datePickDiv = $("<div class='tool datepick'></div>");
         function dateSelected(dateText, inst) {
-            me.gotoDate($datePickDiv.datepicker("getDate"));
             me.$pickDate.click();
+            me.gotoDate($datePickDiv.datepicker("getDate"));
         }
-        var options = {
-            autoSize: true,
-            changeYear: true,
-            showOtherMonths: true,
-            selectOtherMonths: true,
-            numberOfMonths: 2,
-            stepMonths: 2,
-            yearRange: "c-5:c+5",
-            onSelect: dateSelected
-        };
-        var lang = this.config.lang;
-        lang = (lang == 'en' ? '' : lang);
-        $.extend(options, $.datepicker.regional[lang]);
-        $.datepicker.setDefaults(options);
+
         this.$tools.append($datePickDiv);
-        $datePickDiv.datepicker();
+        $datePickDiv.datepicker($.extend({onSelect: dateSelected}, this.config.datepicker));
 
         $datePickDiv.hide();
        
@@ -395,7 +405,31 @@
     };
 
     Planboard.prototype.gotoDate = function(date) {
-        this.setStatus("TODO goto date: " + date);
+        var gotoNum = Planboard.date2Num(date);
+        var hsapi = this.$cscroll.data('jsp');
+        if (gotoNum >= this.cols.firstnum && gotoNum <= this.cols.lastnum) { // allready in range
+            var xpcnt = (gotoNum - this.cols.firstnum) / (this.cols.lastnum - this.cols.firstnum);
+            hsapi.scrollToPercentX(xpcnt);
+            return;
+        }// else
+
+        var prependCount = this.cols.firstnum - gotoNum; 
+        var appendCount = gotoNum - this.cols.lastnum; 
+        if (appendCount  >= 0 && appendCount < this.config.initDayCount ) { // within range of the last
+            this.appendCol(appendCount + this.config.daysafter);   
+            hsapi.scrollToPercentX(100);
+            return;
+        } //else
+        if (prependCount >= 0 && prependCount < this.config.initDayCount ) { //within range of the first
+            this.prependCol(prependCount + this.config.daysbefore); 
+            hsapi.scrollToPercentX(0);
+            return;
+        } // else
+        
+        // no overlap >> new complete range
+        this.clearColumns();
+        this.config.startDate = date;
+        this.initDates();
     }
 
     function ajaxLoadedRows(board, data, textStatus, jqXhr) {
@@ -414,15 +448,18 @@
     Planboard.prototype.initCells = function() {
     
         this.loadRows();    
-        
-        //appendCols
+        this.config.startDate = this.config.startDate || Planboard.offsetDate();
+        this.initDates();
+    }
+    
+    Planboard.prototype.initDates = function() {
         this.appendCol(this.config.initDayCount);
     };
     
     
     Planboard.offsetDate = function(offset, date) {
 
-        offset = offset || -7;
+        offset = offset || 0;
         date = date || new Date();
         
         var od = new Date(date.getTime());
@@ -626,6 +663,17 @@
         this.$months.html(monthsHtml);        
     }
      
+    Planboard.prototype.clearColumns = function() {
+    
+        for (code in this.rows.bycode) {
+            var row = this.rows.bycode[code];
+            row.$row.html("");
+        }
+        this.$days.html("");
+        this.cols = null;
+        this.allocs = null; // clear allocs too since they are attached to the rows
+    }
+    
     Planboard.prototype.appendCol = function(count) {
         this._addCol(false,count);
         this.updateTimes();
@@ -646,14 +694,13 @@
             this.cols = {"count": 0, "bynum": {}}; 
         }
         
-        
         var refDateNum = this.cols.lastnum, offset = 1; //defaults for append
         if (prepend) {
             refDateNum = this.cols.firstnum;
             offset = -1;
         }
         
-        var newDateNum = refDateNum ? refDateNum + offset : Planboard.date2Num(Planboard.offsetDate());
+        var newDateNum = refDateNum ? refDateNum + offset : Planboard.date2Num(this.config.startDate) - this.config.daysbefore;
         
         // add logically
         var newCol = new PlanColumn(newDateNum, this, prepend);
