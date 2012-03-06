@@ -276,39 +276,41 @@
     }
     
     Planboard.registerCellEvents = function(me, $elm, id, code, num) {
-        $elm.data(Planboard.CONTEXT, {id: id, code: code, num: num});
+        var context = {id: id, code: code, num: num};
         $elm.hover(function(evt) {
-            Planboard.enterCell(me, $(this), evt);
+            Planboard.enterCell(context, me, $(this), evt);
         }, function(evt) {
-            Planboard.leaveCell(me, $(this), evt);
+            Planboard.leaveCell(context, me, $(this), evt);
         });
         $elm.click(function(evt) {
-            Planboard.clickCell(me, $(this), evt);
+            Planboard.clickCell(context, me, $(this), evt);
         });
+        
+        
+        //TODO think about a key-press event to allow numeric entry of the number of days
     }
 
-    function highlight($elm) {
+    function highlight($elm, style) {
         $elm.addClass("highlight");
+        if (style) {  $elm.addClass(style); }
     }
     
-    function downlight($elm) {
+    function downlight($elm, style) {
         $elm.removeClass("highlight");
+        if (style) {  $elm.removeClass(style); }
     }
 
-    Planboard.enterCell = function(me, $cell, evt) {
-        var context = $cell.data(Planboard.CONTEXT);
+    Planboard.enterCell = function(context, me, $cell, evt) {
         if (context.code) { highlight( me.rows.bycode[context.code].$elm); }
         if (context.num)  { highlight( me.cols.bynum[context.num].$elm); }
     }
     
-    Planboard.leaveCell = function(me, $cell, evt) {
-        var context = $cell.data(Planboard.CONTEXT);
+    Planboard.leaveCell = function(context, me, $cell, evt) {
         if (context.code) { downlight( me.rows.bycode[context.code].$elm); }
         if (context.num)  { downlight( me.cols.bynum[context.num].$elm); }
     }
     
-    Planboard.clickCell = function(me, $cell, evt) {
-        var context = $cell.data(Planboard.CONTEXT);
+    Planboard.clickCell = function(context, me, $cell, evt) {
         var num = context.num;
         var code = context.code;
         
@@ -318,12 +320,18 @@
         if ( (!sel) || (sel.code != code) ) { //first click in a process OR other selected row, restarts
             sel = {code: code, fromnum: num, tillnum: num, lastnum: num};
         } 
-        if (sel.lastnum <= num) { //follow up click is towards the future
+        if (sel.lastnum == num) { //first click
             sel.fromnum = sel.lastnum;
-            sel.tillnum = (sel.lastnum == num) ? num + 1 : num;
+            sel.tillnum = num + 1; // expand to at least one night
+            sel.markfloat = "left";
+        } else if (sel.lastnum < num) { //follow up click is towards the future
+            sel.fromnum = sel.lastnum;
+            sel.tillnum = num;
+            sel.markfloat = "right";
         } else { // follow up click is towards the past
-            sel.tillnum = sel.lastnum + 1;
+            sel.tillnum = sel.lastnum;
             sel.fromnum = num;
+            sel.markfloat = "left";
         }
         sel.lastnum = num;
         me.selection = sel;
@@ -336,9 +344,57 @@
         sel.$elm.remove();
     }
 
+    Planboard.NEWID = "__NEW__";
     Planboard.showSelection = function(me) {
         var sel = me.selection;
-        sel.$elm = me.makeAllocElm("new", sel.code, sel.fromnum, sel.tillnum, "" + (sel.tillnum - sel.fromnum));
+        if (!sel) { return; }
+        var lbl = "<div style='padding-"+sel.markfloat+": 2px; float: "+sel.markfloat+";'>*</div>" + (sel.tillnum - sel.fromnum);
+        sel.$elm = me.makeAllocElm(Planboard.NEWID, "new", sel.code, sel.fromnum, sel.tillnum, lbl);
+    }
+
+
+    Planboard.registerAllocEvents = function(me, $elm, id, style, code, fromnum, tillnum) {
+        var context = {id: id, style: style, code: code, fromnum: fromnum, tillnum: tillnum};
+        $elm.hover(function(evt) {
+            evt.stopPropagation();
+            Planboard.enterAlloc(context, me, $(this), evt);
+        }, function(evt) {
+            evt.stopPropagation();
+            Planboard.leaveAlloc(context, me, $(this), evt);
+        });
+        $elm.click(function(evt) {
+            evt.stopPropagation();
+            Planboard.clickAlloc(context, me, $(this), evt);
+        });
+    }
+
+    Planboard.enterAlloc = function(context, me, $alloc, evt) {
+        if (context.code) { highlight( me.rows.bycode[context.code].$elm, context.style); }
+        if (context.fromnum && context.tillnum)  { 
+            var num;
+            var firstnum = Math.max(context.fromnum, me.cols.firstnum);
+            var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
+            for(num = firstnum; num <= lastnum; num++) {
+                highlight( me.cols.bynum[num].$elm, context.style); 
+            }
+        }
+    }
+    
+    Planboard.leaveAlloc = function(context, me, $alloc, evt) {
+        if (context.code) { downlight( me.rows.bycode[context.code].$elm, context.style); }
+        if (context.fromnum && context.tillnum)  { 
+            var num;
+            var firstnum = Math.max(context.fromnum, me.cols.firstnum);
+            var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
+            for(num = firstnum; num <= lastnum; num++) {
+                downlight( me.cols.bynum[num].$elm, context.style); 
+            }
+        }
+        me.setStatus("enter alloc: " + context.id + "--todo consume event not to bubble up");
+    }
+    
+    Planboard.clickAlloc = function(context, me, $alloc, evt) {
+        //TODO check if the callback is configured, if so call it.
     }
 
     Planboard.prototype.pickDateTool = function($div) {
@@ -621,7 +677,7 @@
     
         
     
-    Planboard.prototype.makeAllocElm = function(style, code, fromnum, tillnum, label) {
+    Planboard.prototype.makeAllocElm = function(id, style, code, fromnum, tillnum, label) {
         var days = tillnum - fromnum + this.config.allocInclusive; 
         var num = Math.max(this.cols.firstnum, fromnum);
         var offdays = fromnum - num + this.config.allocOffset; 
@@ -634,6 +690,8 @@
         
         var $anchor = this.$center.find("#" + cellId);
         var $elm = $("<div class='" + cellClass + "' style='left: " + offset + "px; width: " + width + "px'></div>"); 
+        Planboard.registerAllocEvents(this, $elm, id, style, code, fromnum, tillnum);
+
         var labels = "";
         var repeatDays = this.config.labelRepeatDayCount;
         var times = Math.floor(days / repeatDays) + 1;
@@ -670,7 +728,7 @@
         var label = alloc[this.config.allocLabelProperty];
         var style = alloc[this.config.allocTypeProperty];
 
-        alloc.$elm = this.makeAllocElm(style, code, fromnum, tillnum, label);
+        alloc.$elm = this.makeAllocElm(id, style, code, fromnum, tillnum, label);
         
         this.allocs[id] = alloc;
     } 
