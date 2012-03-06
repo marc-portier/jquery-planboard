@@ -275,7 +275,7 @@
         this.$status.html(msg);
     }
     
-    Planboard.registerEvents = function(me, $elm, id, code, num) {
+    Planboard.registerCellEvents = function(me, $elm, id, code, num) {
         $elm.data(Planboard.CONTEXT, {id: id, code: code, num: num});
         $elm.hover(function(evt) {
             Planboard.enterCell(me, $(this), evt);
@@ -288,15 +288,11 @@
     }
 
     function highlight($elm) {
-        $elm.css("font-weight","bold");
-        $elm.css("font-size", "20px");
-        $elm.css("color", "#c92200");
+        $elm.addClass("highlight");
     }
     
     function downlight($elm) {
-        $elm.css("font-weight","");
-        $elm.css("font-size", "");
-        $elm.css("color", "");
+        $elm.removeClass("highlight");
     }
 
     Planboard.enterCell = function(me, $cell, evt) {
@@ -814,7 +810,7 @@
         }
         var headId    = toCellId("", this.datenum);
         this.$elm     = $("<div class='u w "+this.classes.join(" ")+"' id="+headId+">"+this.label+"</div>");
-        Planboard.registerEvents(board, this.$elm, headId, null, this.datenum);
+        Planboard.registerCellEvents(board, this.$elm, headId, null, this.datenum);
         
         // hookup to the planboard structure        
         allCols.bynum[this.datenum]=this;
@@ -878,7 +874,7 @@
         
         var headId    = toCellId(code, "");
         this.$elm     = $("<div class='u h row' id="+headId+">"+this.label+"</div>");
-        Planboard.registerEvents(board, this.$elm, headId, code, null);
+        Planboard.registerCellEvents(board, this.$elm, headId, code, null);
         
         // hookup to the planboard structure
         allRows.bycode[code]=this;
@@ -940,7 +936,7 @@
             cellClass += " pmark";
         }        
         var $cell = $("<div class='u h w " + col.classes.join(" ") + "' id='"+cellId+"'><div class='"+cellClass+"'>&nbsp;</div></div>");
-        Planboard.registerEvents(this, $cell, cellId, code, num);
+        Planboard.registerCellEvents(this, $cell, cellId, code, num);
 
         if (prepend) {
             row.$row.prepend($cell);
