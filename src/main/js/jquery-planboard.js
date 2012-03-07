@@ -263,11 +263,18 @@
         // animate hookup the scrollers...
         jspHookup('y', this.$cscroll, this.$wscroll);
         jspHookup('x', this.$cscroll, this.$nscroll);
-        
+
         // size up and redo that upon resize of the window
         this.initSize();
         var me = this;
         $(window).resize(function(){me.initSize()});
+
+        // capture keys
+        $('body').keypress(function(evt) {
+            evt.stopPropagation();
+            Planboard.keypress( me, $(this), evt);
+        });
+
     }
 
     
@@ -285,9 +292,6 @@
         $elm.click(function(evt) {
             Planboard.clickCell(context, me, $(this), evt);
         });
-        
-        
-        //TODO think about a key-press event to allow numeric entry of the number of days
     }
 
     function highlight($elm, style) {
@@ -313,7 +317,6 @@
     Planboard.clickCell = function(context, me, $cell, evt) {
         var num = context.num;
         var code = context.code;
-        
         var sel = me.selection;
 
         Planboard.hideSelection(me);
@@ -323,32 +326,74 @@
         if (sel.lastnum == num) { //first click
             sel.fromnum = sel.lastnum;
             sel.tillnum = num + 1; // expand to at least one night
-            sel.markfloat = "left";
         } else if (sel.lastnum < num) { //follow up click is towards the future
             sel.fromnum = sel.lastnum;
             sel.tillnum = num;
-            sel.markfloat = "right";
         } else { // follow up click is towards the past
             sel.tillnum = sel.lastnum;
             sel.fromnum = num;
-            sel.markfloat = "left";
         }
         sel.lastnum = num;
         me.selection = sel;
         Planboard.showSelection(me);
     }
-    
+
+    Planboard.PRESS_TIMEOUT_MS = 1000; // 1 seconds
+    Planboard.keypress = function( me, $doc, evt) {
+        var sel = me.selection;
+        if (!sel) { return; }
+        
+        var pressTS = (new Date()).getTime(); // capture time to check for follow-up keypress
+        
+        var count = 0;
+        if (evt.which == 43 || evt.which == 61) {               // if + or =
+            count = sel.tillnum - sel.fromnum + 1;              //   increment
+            pressTS = 0;
+        } else if (evt.which == 45 || evt.which == 95) {        // if - or _
+            count = sel.tillnum - sel.fromnum - 1;              //   decrement
+            pressTS = 0;
+        } else if (evt.which < 48 || evt.which > 57) {          // if no digit
+            me.selection.lastcount = 0;                         //   clear count and bail out.
+            delete me.selection.pressTS;
+            return;
+        } else {                                                // normal digit case
+            var digit = evt.which - 48;
+            if (sel.pressTS && pressTS - sel.pressTS < Planboard.PRESS_TIMEOUT_MS) { 
+                count = sel.lastcount;                          //   in time for follow up
+            } 
+            count = count * 10 + digit;
+        }
+        
+        // keep state
+        sel.pressTS = pressTS;
+        sel.lastcount = count;
+        
+        // adapt selection
+        sel.tillnum = sel.fromnum + Math.max(1, count);  // don't allow counts below 1;
+        sel.lastnum = sel.fromnum;
+
+        Planboard.hideSelection(me);
+        me.selection = sel;
+        Planboard.showSelection(me);
+    }
+   
     Planboard.hideSelection = function(me) {
         var sel = me.selection;
         if (!sel) { return; }
         sel.$elm.remove();
+        sel.$elm = null;
     }
 
     Planboard.NEWID = "__NEW__";
     Planboard.showSelection = function(me) {
         var sel = me.selection;
         if (!sel) { return; }
-        var lbl = "<div style='padding-"+sel.markfloat+": 2px; float: "+sel.markfloat+";'>*</div>" + (sel.tillnum - sel.fromnum);
+        var markfloat = "right", marker = "&lt;";
+        if (sel.lastnum == sel.fromnum) {
+            markfloat = "left";
+            marker = "&gt;";
+        }
+        var lbl = "<div style='padding-"+markfloat+": 2px; float: "+markfloat+";'>"+marker+"</div>" + (sel.tillnum - sel.fromnum);
         sel.$elm = me.makeAllocElm(Planboard.NEWID, "new", sel.code, sel.fromnum, sel.tillnum, lbl);
     }
 
@@ -366,7 +411,7 @@
             evt.stopPropagation();
             Planboard.clickAlloc(context, me, $(this), evt);
         });
-    }
+    };
 
     Planboard.enterAlloc = function(context, me, $alloc, evt) {
         if (context.code) { highlight( me.rows.bycode[context.code].$elm, context.style); }
@@ -378,7 +423,7 @@
                 highlight( me.cols.bynum[num].$elm, context.style); 
             }
         }
-    }
+    };
     
     Planboard.leaveAlloc = function(context, me, $alloc, evt) {
         if (context.code) { downlight( me.rows.bycode[context.code].$elm, context.style); }
@@ -390,7 +435,6 @@
                 downlight( me.cols.bynum[num].$elm, context.style); 
             }
         }
-        me.setStatus("enter alloc: " + context.id + "--todo consume event not to bubble up");
     }
     
     Planboard.clickAlloc = function(context, me, $alloc, evt) {
