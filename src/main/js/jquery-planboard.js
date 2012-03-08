@@ -320,20 +320,29 @@
         var sel = me.selection;
 
         Planboard.hideSelection(me);
-        if ( (!sel) || (sel.code != code) ) { //first click in a process OR other selected row, restarts
-            sel = {code: code, fromnum: num, tillnum: num, lastnum: num};
+        sel = sel || {};   // create selection for first click
+        if ( code && sel.code != code ) { // other selected row
+            sel.code = code;
+            if (num != undefined) {
+                sel.fromnum = num;
+                sel.tillnum = num;
+                sel.lastnum = num;
+            }
         } 
-        if (sel.lastnum == num) { //first click
-            sel.fromnum = sel.lastnum;
-            sel.tillnum = num + 1; // expand to at least one night
-        } else if (sel.lastnum < num) { //follow up click is towards the future
-            sel.fromnum = sel.lastnum;
-            sel.tillnum = num;
-        } else { // follow up click is towards the past
-            sel.tillnum = sel.lastnum;
-            sel.fromnum = num;
+        
+        if (num != undefined) {    
+            if (sel.lastnum == num) { //first click
+                sel.fromnum = sel.lastnum;
+                sel.tillnum = num + 1; // expand to at least one night
+            } else if (sel.lastnum < num) { //follow up click is towards the future
+                sel.fromnum = sel.lastnum;
+                sel.tillnum = num;
+            } else { // follow up click is towards the past
+                sel.tillnum = sel.lastnum;
+                sel.fromnum = num;
+            }
+            sel.lastnum = num;
         }
-        sel.lastnum = num;
         me.selection = sel;
         Planboard.showSelection(me);
     }
