@@ -315,6 +315,9 @@
     }
     
     Planboard.clickCell = function(context, me, $cell, evt) {
+    
+        //TODO: arrange for separate clickPeriod / hover-period to allow for period-matching-alloc
+        
         var num = context.num;
         var code = context.code;
         var sel = me.selection;
@@ -351,6 +354,8 @@
     Planboard.keypress = function( me, $doc, evt) {
         var sel = me.selection;
         if (!sel) { return; }
+         
+        //TODO capture key (DELETE?) to remove the selection (since row & date head clicks don't clear selection any more
         
         var pressTS = (new Date()).getTime(); // capture time to check for follow-up keypress
         
