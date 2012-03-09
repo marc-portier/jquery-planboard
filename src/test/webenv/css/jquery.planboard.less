@@ -101,20 +101,6 @@
 	}
 }
 
-/*
-.glow-button-hover(@GlowColor: #fe1a00, @ButtonColor: #ce0100, @TextColor: #ffffff, @TextShadowColor: #b23e35, @BorderColor: #d83526, @ShadowColor: #f29c93, @Radius: 24px) {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, @ButtonColor), color-stop(1, @GlowColor) );
-	background:-moz-linear-gradient( center top, @ButtonColor 5%, @GlowColor 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='@ButtonColor', endColorstr='@GlowColor');
-	background-color:@ButtonColor;
-}
-
-.glow-button-active() {
-	position:relative;
-	top:1px;
-}
-*/
-
 
 .planboard {
     margin:             0;
@@ -237,18 +223,19 @@
             position: relative;
             
             .alloc {
-                position: absolute;
+                position:         absolute;
+                overflow:         hidden;
                 background-color: rgba(50,50,50,0.5);
-                height:      24px;
-                top:         2px;
-                overflow:    hidden;
+	            display:          inline-block;
+
+                font-size:        0.85em;
+                font-weight:      bold;
+
+                height:           24px;
+                line-height:      28px;
+                top:              2px;
                 
-                font-size:   0.85em;
-                font-weight: bold;
-                line-height: 28px;
-	            display:     inline-block;
-                z-index:     1;
-                
+                z-index:          1;                
                 .glow-button(#ededed, #dfdfdf, #777777, #ffffff, #dcdcdc, #fffffff);
             }
         }
@@ -354,11 +341,14 @@ TODO move this into customization/usage seperate css
         .glow-button( #f0c911, #f2ab1e, #c92200, #ded17c, #e65f44, #f9eca0);
     }
     &.new {
+        height:           18px;
+        line-height:      22px;
+        top:              5px;
+        z-index:          2;
+        .glow-button( #79bbff, #378de5, #ffffff, #528ecc, #84bbf3, #bbdaf7);
         /* slightly darker variant
         .glow-button( #63b8ee, #468ccf, #14396a, #7cacde, #3866a3, #bee2f9);
         */
-        .glow-button( #79bbff, #378de5, #ffffff, #528ecc, #84bbf3, #bbdaf7);
-        z-index: 2;
     }
     &.block {
         .glow-button( #c123de, #a20dbd, #ffffff, #9b14b3, #a511c0, #e184f3);
