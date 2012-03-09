@@ -335,8 +335,6 @@
     
     Planboard.clickCell = function(context, me, $cell, evt) {
     
-        //TODO: arrange for separate clickPeriod / hover-period to allow for period-matching-alloc
-        
         var num = context.num;
         var code = context.code;
         var sel = me.selection;
@@ -381,6 +379,7 @@
             me.selection = null;
             Planboard.showSelection(me);
         }
+        
     }
 
     Planboard.keypress = function( me, $body, evt) {
@@ -388,6 +387,8 @@
         if (!sel) { return; }
          
         var pressTS = (new Date()).getTime(); // capture time to check for follow-up keypress
+
+        //TODO capture arrow keys
         
         var count = 0;
         if (evt.which == 43 || evt.which == 61) {               // if + or =
@@ -456,9 +457,39 @@
             Planboard.clickAlloc(context, me, $(this), evt);
         });
     };
-  
+    
+    
     Planboard.clickAlloc = function(context, me, $alloc, evt) {
         //TODO check if the callback is configured, if so call it.
+    }
+  
+  
+    Planboard.registerPeriodEvents = function(me, $elm, id, fromnum, tillnum) {
+        var context = {id: id, style: "period", fromnum: fromnum, tillnum: tillnum};
+        $elm.hover(function(evt) {
+            evt.stopPropagation();
+            Planboard.enterContext(context, me, $(this), evt);
+        }, function(evt) {
+            evt.stopPropagation();
+            Planboard.leaveContext(context, me, $(this), evt);
+        });
+        $elm.click(function(evt) {
+            evt.stopPropagation();
+            Planboard.clickPeriod(context, me, $(this), evt);
+        });
+    };
+  
+    Planboard.clickPeriod = function(context, me, $period, evt) {
+        var sel = me.selection || {};
+                 
+        // adapt selection
+        sel.fromnum = context.fromnum;
+        sel.tillnum = context.tillnum + this.config.periodInclusive - this.config.allocInclusive; // convert from period to alloc
+        sel.lastnum = sel.fromnum;
+
+        Planboard.hideSelection(me);
+        me.selection = sel;
+        Planboard.showSelection(me);
     }
 
     Planboard.prototype.pickDateTool = function($div) {
@@ -705,6 +736,8 @@
         var headId = toCellId("", anchornum);
         var $anchor = this.$days.find("#" + headId);
         period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + period[this.config.periodLabelProperty] + "</div>");
+        Planboard.registerPeriodEvents(this, period.$elm, id, fromnum, tillnum);
+
         $anchor.append(period.$elm);
         
         // mark periods on board
