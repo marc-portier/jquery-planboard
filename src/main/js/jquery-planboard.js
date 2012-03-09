@@ -288,9 +288,9 @@
     Planboard.registerCellEvents = function(me, $elm, id, code, num) {
         var context = {id: id, code: code, num: num};
         $elm.hover(function(evt) {
-            Planboard.enterCell(context, me, $(this), evt);
+            Planboard.enterContext(context, me, $(this), evt);
         }, function(evt) {
-            Planboard.leaveCell(context, me, $(this), evt);
+            Planboard.leaveContext(context, me, $(this), evt);
         });
         $elm.click(function(evt) {
             Planboard.clickCell(context, me, $(this), evt);
@@ -307,14 +307,30 @@
         if (style) {  $elm.removeClass(style); }
     }
 
-    Planboard.enterCell = function(context, me, $cell, evt) {
+    Planboard.enterContext = function(context, me, $cell, evt) {
         if (context.code) { highlight( me.rows.bycode[context.code].$elm); }
         if (context.num)  { highlight( me.cols.bynum[context.num].$elm); }
+        else if (context.fromnum && context.tillnum)  { 
+            var num;
+            var firstnum = Math.max(context.fromnum, me.cols.firstnum);
+            var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
+            for(num = firstnum; num <= lastnum; num++) {
+                highlight( me.cols.bynum[num].$elm, context.style); 
+            }
+        }
     }
     
-    Planboard.leaveCell = function(context, me, $cell, evt) {
+    Planboard.leaveContext = function(context, me, $cell, evt) {
         if (context.code) { downlight( me.rows.bycode[context.code].$elm); }
         if (context.num)  { downlight( me.cols.bynum[context.num].$elm); }
+        else if (context.fromnum && context.tillnum)  { 
+            var num;
+            var firstnum = Math.max(context.fromnum, me.cols.firstnum);
+            var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
+            for(num = firstnum; num <= lastnum; num++) {
+                downlight( me.cols.bynum[num].$elm, context.style); 
+            }
+        }
     }
     
     Planboard.clickCell = function(context, me, $cell, evt) {
@@ -430,41 +446,17 @@
         var context = {id: id, style: style, code: code, fromnum: fromnum, tillnum: tillnum};
         $elm.hover(function(evt) {
             evt.stopPropagation();
-            Planboard.enterAlloc(context, me, $(this), evt);
+            Planboard.enterContext(context, me, $(this), evt);
         }, function(evt) {
             evt.stopPropagation();
-            Planboard.leaveAlloc(context, me, $(this), evt);
+            Planboard.leaveContext(context, me, $(this), evt);
         });
         $elm.click(function(evt) {
             evt.stopPropagation();
             Planboard.clickAlloc(context, me, $(this), evt);
         });
     };
-
-    Planboard.enterAlloc = function(context, me, $alloc, evt) {
-        if (context.code) { highlight( me.rows.bycode[context.code].$elm, context.style); }
-        if (context.fromnum && context.tillnum)  { 
-            var num;
-            var firstnum = Math.max(context.fromnum, me.cols.firstnum);
-            var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
-            for(num = firstnum; num <= lastnum; num++) {
-                highlight( me.cols.bynum[num].$elm, context.style); 
-            }
-        }
-    };
-    
-    Planboard.leaveAlloc = function(context, me, $alloc, evt) {
-        if (context.code) { downlight( me.rows.bycode[context.code].$elm, context.style); }
-        if (context.fromnum && context.tillnum)  { 
-            var num;
-            var firstnum = Math.max(context.fromnum, me.cols.firstnum);
-            var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
-            for(num = firstnum; num <= lastnum; num++) {
-                downlight( me.cols.bynum[num].$elm, context.style); 
-            }
-        }
-    }
-    
+  
     Planboard.clickAlloc = function(context, me, $alloc, evt) {
         //TODO check if the callback is configured, if so call it.
     }
@@ -998,7 +990,7 @@
     function PlanRow(code, label, rowData, board) {
         var allRows   = board.rows;
         
-        this.code     = code; //TODO maybe strip spaces?
+        this.code     = code; 
         this.label    = label;
         this.data     = rowData;
         
@@ -1012,7 +1004,7 @@
         
         var rowId     = toCellId(code, "--");
         this.$row     = $("<div class='uc row' id="+rowId+"></div>");
-        //TODO add existing cols to this row >> USE HTML cat for speed!!!
+
         var allCols = board.cols;
         var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
         for (colnum=firstnum; colnum <= lastnum; colnum++) {
