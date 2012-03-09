@@ -274,7 +274,10 @@
             evt.stopPropagation();
             Planboard.keypress( me, $(this), evt);
         });
-
+        $('body').keyup(function(evt) {
+            evt.stopPropagation();
+            Planboard.keyup( me, $(this), evt);
+        });
     }
 
     
@@ -334,29 +337,40 @@
         } 
         
         if (num != undefined) {    
-            if (sel.lastnum == num) { //first click
-                sel.fromnum = sel.lastnum;
-                sel.tillnum = num + 1; // expand to at least one night
-            } else if (sel.lastnum < num) { //follow up click is towards the future
+            if (sel.lastnum == undefined || sel.lastnum == num) { //first click
+                sel.fromnum = num;
+                sel.tillnum = num + 1;      // expand to at least one night
+            } else if (sel.lastnum < num) { // follow up click is towards the future
                 sel.fromnum = sel.lastnum;
                 sel.tillnum = num;
-            } else { // follow up click is towards the past
+            } else {                        // follow up click is towards the past
                 sel.tillnum = sel.lastnum;
                 sel.fromnum = num;
             }
             sel.lastnum = num;
         }
+        
         me.selection = sel;
         Planboard.showSelection(me);
     }
 
     Planboard.PRESS_TIMEOUT_MS = 1000; // 1 seconds
-    Planboard.keypress = function( me, $doc, evt) {
+    Planboard.keyup = function(me, $body, evt) {
+
+        var sel = me.selection;
+        if (!sel) { return; }
+
+        if (evt.which == 27 || evt.which == 46) { // ESC or DEL
+            Planboard.hideSelection(me);
+            me.selection = null;
+            Planboard.showSelection(me);
+        }
+    }
+
+    Planboard.keypress = function( me, $body, evt) {
         var sel = me.selection;
         if (!sel) { return; }
          
-        //TODO capture key (DELETE?) to remove the selection (since row & date head clicks don't clear selection any more
-        
         var pressTS = (new Date()).getTime(); // capture time to check for follow-up keypress
         
         var count = 0;
