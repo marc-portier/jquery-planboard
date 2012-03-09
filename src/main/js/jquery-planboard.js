@@ -430,6 +430,7 @@
         if (sel) { 
             sel.$elm.remove();
             sel.$elm = null;
+            me.setStatus("");
         } 
         // show new
         sel = newsel;
