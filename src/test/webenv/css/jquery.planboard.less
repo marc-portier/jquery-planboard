@@ -358,7 +358,7 @@ TODO move this into customization/usage seperate css
     }
 }
 .planboard .highlight {
-    &.reservation, &.option, &.new, &.block, &.allotment {
+    &.reservation, &.option, &.new, &.block, &.allotment, &.period {
         font-weight:    normal;
         font-style:     italic;
         font-size:      1.4em;
@@ -377,5 +377,8 @@ TODO move this into customization/usage seperate css
     }
     &.allotment {
         color:          #77d42a;
+    }
+    &.period {
+        color:          @periodTextColor;
     }
 }
