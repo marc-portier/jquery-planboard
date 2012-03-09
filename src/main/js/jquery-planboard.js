@@ -341,7 +341,6 @@
         var code = context.code;
         var sel = me.selection;
 
-        Planboard.hideSelection(me);
         sel = sel || {};   // create selection for first click
         if ( code && sel.code != code ) { // other selected row
             sel.code = code;
@@ -367,8 +366,7 @@
         }
         
         sel.pressTS = 0; 
-        me.selection = sel;
-        Planboard.showSelection(me);
+        Planboard.updateSelection(me, sel);
     }
 
     Planboard.PRESS_TIMEOUT_MS = 1000; // 1 seconds
@@ -378,11 +376,8 @@
         if (!sel) { return; }
 
         if (evt.which == 27 || evt.which == 46) { // ESC or DEL
-            Planboard.hideSelection(me);
-            me.selection = null;
-            Planboard.showSelection(me);
+            Planboard.updateSelection(me, null);
         }
-        
     }
 
     Planboard.keypress = function( me, $body, evt) {
@@ -391,9 +386,6 @@
          
         var pressTS = (new Date()).getTime(); // capture time to check for follow-up keypress
 
-        //TODO capture arrow keys
-        me.setStatus("key =  " + evt.which);
-        
         var count = sel.tillnum - sel.fromnum;
         if (evt.which == 43 || evt.which == 61) {               // if + or =
             count++;                                            //   increment
@@ -428,29 +420,50 @@
         sel.tillnum = sel.fromnum + Math.max(1, count);  // don't allow counts below 1;
         sel.lastnum = sel.fromnum;
 
-        Planboard.hideSelection(me);
-        me.selection = sel;
-        Planboard.showSelection(me);
+        Planboard.updateSelection(me, sel);
     }
    
-    Planboard.hideSelection = function(me) {
-        var sel = me.selection;
-        if (!sel) { return; }
-        sel.$elm.remove();
-        sel.$elm = null;
+    Planboard.NEWID = "__NEW__";
+    Planboard.toDateStr = function(me, num) {
+        var date = Planboard.num2Date(num);
+        var datenames = me.config.datenames;
+        var monthnames= me.config.monthnames;
+        return datenames[date.getDay()] + " " + date.getDate() + " " + monthnames[date.getMonth()] + " " + date.getFullYear();
     }
 
-    Planboard.NEWID = "__NEW__";
-    Planboard.showSelection = function(me) {
+    Planboard.updateSelection = function(me, newsel) {
+        // hide old
         var sel = me.selection;
-        if (!sel) { return; }
-        var markfloat = "right", marker = "&lt;";
-        if (sel.lastnum == sel.fromnum) {
-            markfloat = "left";
-            marker = "&gt;";
+        if (sel) { 
+            sel.$elm.remove();
+            sel.$elm = null;
+        } 
+        // show new
+        sel = newsel;
+        if (sel) {
+            var markfloat = "right", marker = "&lt;";
+            if (sel.lastnum == sel.fromnum) {
+                markfloat = "left";
+                marker = "&gt;";
+            }
+            var lbl = "<div style='padding-"+markfloat+": 2px; float: "+markfloat+";'>"+marker+"</div>" + (sel.tillnum - sel.fromnum);
+            sel.$elm = me.makeAllocElm(Planboard.NEWID, "new", sel.code, sel.fromnum, sel.tillnum, lbl);
+            
+            var lbl = "";
+            if (sel.code) {
+                lbl += me.rows.bycode[sel.code].label;
+            }
+            if (sel.fromnum && sel.tillnum) {
+                lbl += lbl.length ? ": " : "";
+                lbl += "("+ (sel.tillnum - sel.fromnum) +") ";
+                lbl += Planboard.toDateStr(me, sel.fromnum) + " -> " + Planboard.toDateStr(me,  sel.tillnum);
+            }
+            me.setStatus(lbl);
         }
-        var lbl = "<div style='padding-"+markfloat+": 2px; float: "+markfloat+";'>"+marker+"</div>" + (sel.tillnum - sel.fromnum);
-        sel.$elm = me.makeAllocElm(Planboard.NEWID, "new", sel.code, sel.fromnum, sel.tillnum, lbl);
+        
+        // update
+        me.selection = sel;
+        // todo trigger 'selection-changed'
     }
 
 
@@ -499,9 +512,7 @@
         sel.lastnum = sel.fromnum;
         sel.pressTS = 0;
 
-        Planboard.hideSelection(me);
-        me.selection = sel;
-        Planboard.showSelection(me);
+        Planboard.updateSelection(me, sel);
     }
 
     Planboard.prototype.pickDateTool = function($div) {
