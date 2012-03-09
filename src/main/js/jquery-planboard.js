@@ -389,13 +389,20 @@
         var pressTS = (new Date()).getTime(); // capture time to check for follow-up keypress
 
         //TODO capture arrow keys
+        me.setStatus("key =  " + evt.which);
         
-        var count = 0;
+        var count = sel.tillnum - sel.fromnum;
         if (evt.which == 43 || evt.which == 61) {               // if + or =
-            count = sel.tillnum - sel.fromnum + 1;              //   increment
+            count++;                                            //   increment
             pressTS = 0;
         } else if (evt.which == 45 || evt.which == 95) {        // if - or _
-            count = sel.tillnum - sel.fromnum - 1;              //   decrement
+            count--;                                            //   decrement
+            pressTS = 0;
+        } else if (evt.which == 60 || evt.which == 44) {        // if < or ,
+            sel.fromnum--;                                      //   shift left
+            pressTS = 0;
+        } else if (evt.which == 62 || evt.which == 46) {        // if > or .
+            sel.fromnum++;                                      //   shift right
             pressTS = 0;
         } else if (evt.which < 48 || evt.which > 57) {          // if no digit
             me.selection.lastcount = 0;                         //   clear count and bail out.
