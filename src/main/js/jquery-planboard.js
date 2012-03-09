@@ -2,21 +2,14 @@
 // CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
  //TODO
- //1- tools & buttons:  implement the added ones, think about more?
- // filtering/hiding/removing rows on metadata? 
- // dynamically adding rows 
- //2- selection mode implementation
- // selection of rental period >> highlighting available rows 
- //3- apis - events - config
- //  > docs
+ //1- tools & buttons:  visualize datepicker nicely, move-out the remove and add rows to customization
+ //2- apis - events - config
  //  > allow to add tools by moving them in from a passed div#id? or by passing the $tools to a callback
- //  > events: selectionChange, selectionClick
- //  > methods: addRow, addPeriod, addAlloc, clearSelection, setSelection, 
- //4- optimise building and general speed + cleanup pcode
- //   (see also code for jsp (jq-scroll-pane): it samples more hidden variables inside 'create' function, better encapsulation
- //    jquery tricks: add elms through HTML generation then lookup by id or class.
- //    work less with dates, but rather with the datenums, only convert for visualization
- //5- visualisation: loading - elements
+ //  > events & callbacks: selectionChange, selectionClick, selectionNew, 
+ //  > methods: addRow, addPeriod, addAlloc, clearSelection, setSelection, removeRow, removeAlloc, updateAlloc, updatePeriod
+ //3- docs en site
+ //  > api
+ //  > enduser use
 
  // --
  // think dependencies: default css to be overriden should be in src/main
