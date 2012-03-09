@@ -10,6 +10,8 @@
  //3- apis - events - config
  //  > docs
  //  > allow to add tools by moving them in from a passed div#id? or by passing the $tools to a callback
+ //  > events: selectionChange, selectionClick
+ //  > methods: addRow, addPeriod, addAlloc, clearSelection, setSelection, 
  //4- optimise building and general speed + cleanup pcode
  //   (see also code for jsp (jq-scroll-pane): it samples more hidden variables inside 'create' function, better encapsulation
  //    jquery tricks: add elms through HTML generation then lookup by id or class.
@@ -364,6 +366,7 @@
             sel.lastnum = num;
         }
         
+        sel.pressTS = 0; 
         me.selection = sel;
         Planboard.showSelection(me);
     }
@@ -410,6 +413,7 @@
             return;
         } else {                                                // normal digit case
             var digit = evt.which - 48;
+            count = 0;
             if (sel.pressTS && pressTS - sel.pressTS < Planboard.PRESS_TIMEOUT_MS) { 
                 count = sel.lastcount;                          //   in time for follow up
             } 
@@ -493,6 +497,7 @@
         sel.fromnum = context.fromnum;
         sel.tillnum = context.tillnum + this.config.periodInclusive - this.config.allocInclusive; // convert from period to alloc
         sel.lastnum = sel.fromnum;
+        sel.pressTS = 0;
 
         Planboard.hideSelection(me);
         me.selection = sel;
