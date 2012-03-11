@@ -303,9 +303,12 @@
     }
 
     Planboard.enterContext = function(context, me, $cell, evt) {
-        if (context.code) { highlight( me.rows.bycode[context.code].$elm); }
-        if (context.num)  { highlight( me.cols.bynum[context.num].$elm); }
-        else if (context.fromnum && context.tillnum)  { 
+        if (context.code) { 
+            highlight( me.rows.bycode[context.code].$elm, context.style); 
+        } 
+        if (context.num)  { 
+            highlight( me.cols.bynum[context.num].$elm, context.style); 
+        } else if (context.fromnum && context.tillnum)  { 
             var num;
             var firstnum = Math.max(context.fromnum, me.cols.firstnum);
             var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
@@ -316,9 +319,12 @@
     }
     
     Planboard.leaveContext = function(context, me, $cell, evt) {
-        if (context.code) { downlight( me.rows.bycode[context.code].$elm); }
-        if (context.num)  { downlight( me.cols.bynum[context.num].$elm); }
-        else if (context.fromnum && context.tillnum)  { 
+        if (context.code) { 
+            downlight( me.rows.bycode[context.code].$elm, context.style); 
+        }
+        if (context.num)  { 
+            downlight( me.cols.bynum[context.num].$elm, context.style); 
+        } else if (context.fromnum && context.tillnum)  { 
             var num;
             var firstnum = Math.max(context.fromnum, me.cols.firstnum);
             var lastnum  = Math.min(context.tillnum, me.cols.lastnum);
