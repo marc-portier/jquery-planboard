@@ -234,10 +234,10 @@
 
         this.$tools.append($datePickDiv);
         $datePickDiv.datepicker($.extend({onSelect: dateSelected}, this.config.datepicker));
-
         $datePickDiv.hide();
        
-        this.$pickDate = $("<button class='tool'>D</button>").click(function() {me.pickDateTool($datePickDiv)});
+        this.$pickDate = $("<button class='tool'><img src='"+this.config.datePickerImgSrc+"'></button>");
+        this.$pickDate.click(function() {me.pickDateTool($datePickDiv)});
         var $moreRows = $("<button class='tool'>M</button>").click(function() {me.moreRowsTool()});
         this.$hideRows = $("<button class='tool'>H</button>").click(function() {me.hideRowsTool()});
         this.$tools.append(this.$pickDate).append($moreRows).append(this.$hideRows);
@@ -513,10 +513,10 @@
         if (!$div.data("context") ) {
             $div.data("context", true);
             $div.show(); 
-            this.$pickDate.html("d");//TODO better visual
+            this.$pickDate.addClass("pressed");
             $div.css("right", $div.find(".ui-widget").outerWidth() + "px");
         } else {
-            this.$pickDate.html("D"); //TODO better visual
+            this.$pickDate.removeClass("pressed"); 
             $div.hide();
             $div.data("context", false);
         }
@@ -569,7 +569,7 @@
         
         var context;
         function startTool() {
-            me.$hideRows.html('h'); //TODO some better visual clue 
+            me.$hideRows.addClass('pressed');
             context = {
                 '$selects': $([]), 
                 '$added': $([])
@@ -586,7 +586,7 @@
             hideSelectors();
 
             context = null;
-            me.$hideRows.html('H');  //TODO remove visual clue of enabling
+            me.$hideRows.removeClass('pressed');
         }
         
         function doTool() {
