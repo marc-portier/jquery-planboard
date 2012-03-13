@@ -16,7 +16,7 @@ WORKING:
     - including scrolling and resizing effects
   - possibility to add dates in front and at the back
   - allow to navigate to a certain date
-  - allow to select a new period to commit
+  - allow to select a new allocation to commit
 
 
 NOT WORKING:
@@ -24,12 +24,11 @@ NOT WORKING:
 
 
 DOCS:
-  - we are fully in the 'docs are for wimps' -state :) 
-    no honestly: there is no api yet, the code is small and should be documenting itself at the moment... the only exception is the documentation you are reading now :)
+see https://github.com/marc-portier/jquery-planboard/wiki
 
 
 YOU:
-  - open for comments and contributions
+  - feel free to share your comments, suggestions and contributions
 
 
 NEXT/TODO:

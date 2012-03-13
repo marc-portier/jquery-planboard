@@ -2,7 +2,6 @@
 // CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
  //TODO
- //1- tools & buttons:  visualize datepicker nicely, move-out the remove and add rows to customization
  //2- apis - events - config
  //  > allow to add tools by moving them in from a passed div#id? or by passing the $tools to a callback
  //  > events & callbacks: selectionChange, selectionClick, selectionNew, 
@@ -67,18 +66,25 @@
         if (lang != 'en') {
             $.extend(options, $.datepicker.regional[lang]);
         } 
-        if (this.config.datenames) {  options.dayNamesMin  = this.config.datenames; }
-        else {                        this.config.datenames  = options.dayNamesMin; }
-        if (this.config.monthnames) { options.monthNames  = this.config.monthnames; }
-        else {                        this.config.monthnames  = options.monthNames; }
+        if (this.config.datenames) {  
+            options.dayNamesMin  = this.config.datenames; 
+        } else {
+            this.config.datenames  = options.dayNamesMin; 
+        }
+        if (this.config.monthnames) { 
+            options.monthNames  = this.config.monthnames; 
+        } else {
+            this.config.monthnames = options.monthNames; 
+        }
         delete options.onSelect;  // make sure nobody captures this event
         this.config.datepicker = options; // not setting them as default as not to interfere
         
         this.$board = $elm;
-        this.init();
+        this.init();        
+        
+        $elm.data('planboard', this);
     }
     
-    Planboard.CONTEXT = "planboard.context";
     Planboard.config = {
         //pass-through options to jsp
         jScrollPane:         {showArrows: true},
@@ -149,6 +155,42 @@
         datePickerImgSrc:    "./image/date.png"
     }
     
+    Planboard.prototype.eachRow = function(selection, fn) {
+        if(arguments.length < 2)  {
+            fn = arguments[0];
+            selection = null;
+        }
+        if (! $.isFunction(fn) ){
+            return;
+        }
+        var code;
+        if (!selection) {
+            for (code in this.rows.bycode) {
+                fn(this, this.rows.bycode[code]);
+            }
+        } else {
+            if (selection.constructor != Array) {
+                selection = [selection];
+            }
+            $(selection).each(function() {
+                fn(this, this.rows.bycode[this]);
+            });
+        }
+    }
+    
+    Planboard.prototype.addToElement = function(elmName, $stuff) {
+        var $parent = this.getElement(elmName);
+        
+        if ($parent) {
+            $parent.append($stuff);
+        }
+    }
+    
+    Planboard.prototype.getElement = function(elmName) {
+        if (       elmName == "tools")      { return this.$tools; 
+        } else if (elmName == "north-west") { return this.$nw; 
+        }
+    }
 
     function createGrid(me) {
         me.$nw=$("<div class='north west'      ></div>");
@@ -238,9 +280,7 @@
        
         this.$pickDate = $("<button class='tool'><img src='"+this.config.datePickerImgSrc+"'></button>");
         this.$pickDate.click(function() {me.pickDateTool($datePickDiv)});
-        var $moreRows = $("<button class='tool'>M</button>").click(function() {me.moreRowsTool()});
-        this.$hideRows = $("<button class='tool'>H</button>").click(function() {me.hideRowsTool()});
-        this.$tools.append(this.$pickDate).append($moreRows).append(this.$hideRows);
+        this.$tools.append(this.$pickDate);
 
         this.$ee.append(this.$tools);
         
@@ -527,93 +567,6 @@
             $div.data("context", false);
         }
     }
-    
-    Planboard.prototype.moreRowsTool = function() {
-        this.setStatus("TODO: show selector dialog to obtain more rows, then load them");
-    }
-    
-    Planboard.prototype.hideRowsTool = function() {
-        var me = this;
-        
-        function showSelectors() {
-
-            for (code in me.rows.bycode) {
-                var row = me.rows.bycode[code];
-                var $s = $("<input type='checkbox'>");
-                $s.data('row', row);
-                var $d = $("<div style='position: absolute; left: 0px; top: 2px'></div>").append($s);
-                row.$elm.append($d); // show them
-
-                context.$selects = context.$selects.add($s); // keep ref
-                context.$added = context.$added.add($d); // keep ref
-            }
-            
-            var $ctrl =  $("<div style='position:absolute; bottom: 2px'></div>");
-            var $grp = $("<input type='checkbox'>").change(function() {
-                if ($grp.attr('checked') === 'checked') {       // if grp-selects ON
-                    context.$selects.attr('checked','checked'); // set all selects ON
-                } else {
-                    context.$selects.removeAttr('checked');     // set all selects OFF
-                }
-            });
-            var $ok = $("<button>o</button>").click(function() {
-                doTool();
-                endTool();
-            });
-            var $cancel = $("<button>c</button>").click(function() {
-                endTool();
-            });
-            $ctrl.append($grp).append($ok).append($cancel);
-            me.$nw.append($ctrl);
-            context.$added = context.$added.add($ctrl);
-        }
-        
-        function hideSelectors() {
-            context.$added.remove();
-        }
-        
-        
-        var context;
-        function startTool() {
-            me.$hideRows.addClass('pressed');
-            context = {
-                '$selects': $([]), 
-                '$added': $([])
-            };
-            
-            showSelectors();
-
-            me.$hideRows.data('context', context);
-        }
-        
-        function endTool() {
-            me.$hideRows.data('context', null);
-
-            hideSelectors();
-
-            context = null;
-            me.$hideRows.removeClass('pressed');
-        }
-        
-        function doTool() {
-            context.$selects.each(function() {
-                var $this = $(this);
-                if (!$this.attr('checked')) { return; }
-                
-                var row = $this.data('row');
-                me.removeRow(row);
-            });
-        }
-        
-        //tool-toggle-control
-        context = this.$hideRows.data('context');
-        if (!context) {
-            startTool();
-        } else {
-            endTool();
-        }
-    }
-    
     
     function jspHookup(axis, $el1, $el2) {
         var ap1 = $el1.data('jsp');

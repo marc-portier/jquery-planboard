@@ -4,7 +4,7 @@
 <HEAD>
   <TITLE>jquery-planBoard test and demo page</TITLE>
   
-  <link type="text/css" rel="stylesheet"      href="./css/jquery-ui-1.8.18.custom.css"  media="all" />
+  <link type="text/css" rel="stylesheet"      href="./css/jquery-ui-1.8.18.custom.css"    media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.css"         media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.lozenge.css" media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/demo.css"                       media="all" />
@@ -24,8 +24,87 @@
   
   <script type="text/javascript" >
     ;(function($) {
+    
+        var hideContext;
+        hideRowsTool = function(api, $tool) {
+            var me = this;
+            
+            function showSelectors() {
+
+                api.eachRow( function(api, row)  {
+                    var $s = $("<input type='checkbox'>");
+                    $s.data('row', row);
+                    var $d = $("<div style='position: absolute; left: 0px; top: 2px'></div>").append($s);
+                    row.$elm.append($d); // show them
+
+                    hideContext.$selects = hideContext.$selects.add($s); // keep ref
+                    hideContext.$added = hideContext.$added.add($d); // keep ref
+                });
+                
+                var $ctrl =  $("<div style='position:absolute; bottom: 2px'></div>");
+                var $grp = $("<input type='checkbox'>").change(function() {
+                    if ($grp.attr('checked') === 'checked') {       // if grp-selects ON
+                        hideContext.$selects.attr('checked','checked'); // set all selects ON
+                    } else {
+                        hideContext.$selects.removeAttr('checked');     // set all selects OFF
+                    }
+                });
+                var $ok = $("<button>o</button>").click(function() {
+                    doTool();
+                    endTool();
+                });
+                var $cancel = $("<button>c</button>").click(function() {
+                    endTool();
+                });
+                $ctrl.append($grp).append($ok).append($cancel);
+                api.addToElement("north-west", $ctrl);
+                hideContext.$added = hideContext.$added.add($ctrl);
+            }
+            
+            function hideSelectors() {
+                hideContext.$added.remove();
+            }
+            
+            
+            function startTool() {
+                $tool.addClass('pressed');
+                hideContext = {
+                    '$selects': $([]), 
+                    '$added': $([])
+                };
+                
+                showSelectors();
+            }
+            
+            function endTool() {
+                hideSelectors();
+
+                hideContext = null;
+                $tool.removeClass('pressed');
+            }
+            
+            function doTool() {
+                hideContext.$selects.each(function() {
+                    var $this = $(this);
+                    if (!$this.attr('checked')) { return; }
+                    
+                    var row = $this.data('row');
+                    api.removeRow(row);
+                });
+            }
+            
+            //tool-toggle-control
+            if (!hideContext) {
+                startTool();
+            } else {
+                endTool();
+            }
+        }
+
+
         $(document).ready( function() {
-            $('div#planboard').planboard({
+            var $pb = $('div#planboard');
+            $pb.planboard({
                 "uri": {
                     "rowdata":          "./data/ve.json", 
                     "period":           "./data/period.json", 
@@ -34,6 +113,9 @@
                 },
                 "allocRowProperty":   "ve"
             });
+            var api = $pb.data('planboard');
+            var $t = $("<button class='tool'>H</button>").click(function(){hideRowsTool( api, $(this));});
+            api.addToElement("tools", $t);
         });
     }(jQuery));
   </script>
