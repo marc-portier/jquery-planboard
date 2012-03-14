@@ -114,8 +114,45 @@
                 "allocRowProperty":   "ve"
             });
             var api = $pb.data('planboard');
-            var $t = $("<button class='tool'>H</button>").click(function(){hideRowsTool( api, $(this));});
-            api.addToElement("tools", $t);
+            var $h = $("<button class='tool'>H</button>").click(function(){hideRowsTool( api, $(this));});
+            api.addToElement("tools", $h);
+            
+            var today = new Date();
+            var nextweek = new Date(today.getTime() + 7*24*60*60*1000);
+            var $f = $("<button class='tool'>F</button>").click(function(){ api.setSelection(100010, today, nextweek )});
+            api.addToElement("tools", $f);
+            
+            api.selectionChange(function(evt, sel){
+                if (sel) { 
+                    console.log(sel.lbl);
+                } else {
+                    console.log("selection cleared.");
+                }
+            });
+            function toDateFmt(date) {
+                return date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate();
+            }
+            api.selectionDetail(function(evt, sel) {
+                console.log("selection click: " + sel.lbl);
+                // make this an allocation:
+                api.clearSelection();
+                var newId = Math.floor(Math.random()*1000000);
+                
+                api.addAlloc({
+                    "id"  : newId,  
+                    "from": toDateFmt(sel.fromdate),
+                    "till": toDateFmt(sel.tilldate), 
+                    "type": "reservation", 
+                    "ve"  : sel.code, 
+                    "label": "new added"
+                });
+            });
+            api.allocDetail(function(evt, alloc) {
+                console.log("you clicked alloc: " + alloc.id);
+            });
+            api.dateRangeChanged(function(evt, range) {
+                console.log("range spans from: " + range.firstdate + " - till: " + range.lastdate);
+            });
         });
     }(jQuery));
   </script>

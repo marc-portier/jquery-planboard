@@ -3,12 +3,9 @@
 
  //TODO
  //2- apis - events - config
- //  > allow to add tools by moving them in from a passed div#id? or by passing the $tools to a callback
- //  > events & callbacks: selectionChange, selectionClick, selectionNew, 
- //  > methods: addRow, addPeriod, addAlloc, clearSelection, setSelection, removeRow, removeAlloc, updateAlloc, updatePeriod
+ //  > methods: addRow, addPeriod, removeRow, removeAlloc, updateAlloc, updatePeriod
  //3- docs en site
  //  > api
- //  > enduser use
 
  // --
  // think dependencies: default css to be overriden should be in src/main
@@ -39,6 +36,20 @@
         return $.extend($.extend({}, defs), vals);
     }
 
+    function jqEnableEvent(obj, name, bubble) {
+        bubble = bubble || false;
+        if (name == undefined) {return; }
+        name = "" + name; //stringify
+       
+        if (obj[name] != undefined) {
+            throw "Can't initialise eventing for " + name + ". Associated property already exists.";
+        }
+       
+        var $obj = $(obj);
+        obj[name] = function(fn){
+            return (fn && $.isFunction(fn))? $obj.bind(name, null, fn, bubble) : $obj.triggerHandler(name, [fn]);
+        }
+    };
 
     // -------------------------------------------------------------------------
     //
@@ -46,7 +57,6 @@
     //
     // -------------------------------------------------------------------------
     
-
 
     // -------------------------------------------------------------------------
     //
@@ -192,6 +202,23 @@
         }
     }
 
+    Planboard.prototype.getSelection = function() {
+        return this.selection;
+    }
+    
+    Planboard.prototype.clearSelection = function() {
+        Planboard.updateSelection(this, null);
+    }
+    
+    Planboard.prototype.setSelection = function(code, fromdate, tilldate) {
+        Planboard.updateSelection(this, {
+            code   : code, 
+            fromnum: Planboard.date2Num(fromdate), 
+            tillnum: Planboard.date2Num(tilldate)
+        });
+    }
+    
+
     function createGrid(me) {
         me.$nw=$("<div class='north west'      ></div>");
         me.$nm=$("<div class='north meridian'  ></div>");
@@ -292,9 +319,12 @@
             this.$center.html("");
         }
 
+        // enable the events
+        this.initEvents();
+
         // add some cols & rows (callback and or default)
         this.initCells();
-
+        
         // animate hookup the scrollers...
         jspHookup('y', this.$cscroll, this.$wscroll);
         jspHookup('x', this.$cscroll, this.$nscroll);
@@ -463,8 +493,7 @@
     }
    
     Planboard.NEWID = "__NEW__";
-    Planboard.toDateStr = function(me, num) {
-        var date = Planboard.num2Date(num);
+    Planboard.toDateStr = function(me, date) {
         var datenames = me.config.datenames;
         var monthnames= me.config.monthnames;
         return datenames[date.getDay()] + " " + date.getDate() + " " + monthnames[date.getMonth()] + " " + date.getFullYear();
@@ -494,16 +523,19 @@
                 lbl += me.rows.bycode[sel.code].label;
             }
             if (sel.fromnum && sel.tillnum) {
+                sel.fromdate = Planboard.num2Date(sel.fromnum);
+                sel.tilldate = Planboard.num2Date(sel.tillnum);
                 lbl += lbl.length ? ": " : "";
                 lbl += "("+ (sel.tillnum - sel.fromnum) +") ";
-                lbl += Planboard.toDateStr(me, sel.fromnum) + " -> " + Planboard.toDateStr(me,  sel.tillnum);
+                lbl += Planboard.toDateStr(me, sel.fromdate) + " -> " + Planboard.toDateStr(me,  sel.tilldate);
             }
+            sel.lbl = lbl;
             me.setStatus(lbl);
         }
         
         // update
         me.selection = sel;
-        // todo trigger 'selection-changed'
+        me.selectionChange(sel);
     }
 
 
@@ -524,9 +556,12 @@
     
     
     Planboard.clickAlloc = function(context, me, $alloc, evt) {
-        //TODO check if the callback is configured, if so call it.
+        if (context.id == Planboard.NEWID) {
+            me.selectionDetail(me.selection);
+        } else {
+            me.allocDetail(me.allocs[context.id]);
+        }
     }
-  
   
     Planboard.registerPeriodEvents = function(me, $elm, id, fromnum, tillnum) {
         var context = {id: id, style: "period", fromnum: fromnum, tillnum: tillnum};
@@ -911,6 +946,8 @@
             this.$days.append(newCol.$elm);
         }
         
+        if (count == null) { return; } // only resize and event at the end of your count
+        
         //resize
         var newCellHeight = newCol.$elm.height() + 1;
         var newHeight = Math.max(this.$north.height(), newCellHeight);
@@ -924,6 +961,12 @@
         this.$center.width(newWidth);
         
         this.reinitHorizontalScrollBar();
+
+        // event
+        this.dateRangeChanged({
+            firstdate: Planboard.num2Date(this.cols.firstnum), 
+            lastdate:  Planboard.num2Date(this.cols.lastnum)
+        });
     };
     
     function PlanColumn(datenum, board, prepend) {
@@ -971,7 +1014,6 @@
             this.rows={ "count" : 0, "bycode" : {}};
         }
         
-        //TODO make the fields to use as code & label configurable!
         var code = rowData[this.config.rowIdProperty];
         var label = rowData[this.config.rowLabelProperty];
         
@@ -1077,6 +1119,12 @@
         col.$cells.add($cell); // don't do this in HTML production, instead add class-name with encoded datenum!
     }
     
+    Planboard.prototype.initEvents = function() {
+        jqEnableEvent(this, "selectionChange");
+        jqEnableEvent(this, "selectionDetail");
+        jqEnableEvent(this, "allocDetail");
+        jqEnableEvent(this, "dateRangeChanged");
+    }
     
     Planboard.prototype.initSize = function() {
         // release after resize
