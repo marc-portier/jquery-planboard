@@ -3,7 +3,7 @@
 
  //TODO
  //2- apis - events - config
- //  > methods: addRow, addPeriod, removeRow, removeAlloc, updateAlloc, updatePeriod
+ //  > methods: addRow, addPeriod, addAlloc, removeRow, removeAlloc, updateAlloc, updatePeriod
  //3- docs en site
  //  > api
 
@@ -905,6 +905,7 @@
         }
         this.$days.html("");
         this.cols = null;
+        this.periods = null;
         this.allocs = null; // clear allocs too since they are attached to the rows
     }
     
@@ -950,8 +951,7 @@
         
         //resize
         var newCellHeight = newCol.$elm.height() + 1;
-        var newHeight = Math.max(this.$north.height(), newCellHeight);
-        this.$north.height(newHeight);
+        this.$north.height(newCellHeight);
         
         var newWidth =  1 + this.cols.count * (this.config.unitsize);
         var oldWidth = this.$north.width();
@@ -959,7 +959,7 @@
         this.$colhead.width(newWidth);
         this.$north.width(newWidth);
         this.$center.width(newWidth);
-        
+
         this.reinitHorizontalScrollBar();
 
         // event
