@@ -504,6 +504,8 @@
         var sel = me.selection;
         if (sel) { 
             sel.$elm.remove();
+            var context = {id: sel.id, style: "new", code: sel.code, fromnum: sel.fromnum, tillnum: sel.tillnum};
+            Planboard.leaveContext(context, me, sel.$elm, null);
             sel.$elm = null;
             me.setStatus("");
         } 
