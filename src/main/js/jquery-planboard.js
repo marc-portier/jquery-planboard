@@ -2,11 +2,6 @@
 // CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 
  //TODO
- //2- apis - events - config
- //  > methods: addRow, addPeriod, addAlloc, removeRow, removeAlloc, updateAlloc, updatePeriod
- //3- docs en site
- //  > api
-
  // --
  // think dependencies: default css to be overriden should be in src/main
  // less should be compiled
