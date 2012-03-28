@@ -695,7 +695,7 @@
     };
     
     Planboard.num2Date = function(num) {
-        if (!num) {
+        if (num == null) {
             return null;
         }
         return new Date(num * ONEDAYms);
@@ -932,7 +932,7 @@
             offset = -1;
         }
         
-        var newDateNum = refDateNum ? refDateNum + offset : Planboard.date2Num(this.config.startDate) - this.config.daysbefore;
+        var newDateNum = (refDateNum != null) ? refDateNum + offset : Planboard.date2Num(this.config.startDate) - this.config.daysbefore;
         
         // add logically
         var newCol = new PlanColumn(newDateNum, this, prepend);
@@ -987,10 +987,10 @@
         allCols.bynum[this.datenum]=this;
         if (prepend) {
             allCols.firstnum = this.datenum;
-            allCols.lastnum  = allCols.lastnum || allCols.firstnum;  // if prepending first
+            allCols.lastnum  = (allCols.lastnum != null) ? allCols.lastnum : allCols.firstnum;  // if prepending first
         } else {
             allCols.lastnum = this.datenum;
-            allCols.firstnum  = allCols.firstnum || allCols.lastnum; // if appending first
+            allCols.firstnum  = (allCols.firstnum != null ) ? allCols.firstnum : allCols.lastnum; // if appending first
         }
         allCols.count++;
         
