@@ -837,7 +837,8 @@
         var repeatWidth = Math.min(width, repeatDays * this.config.unitsize);
         var n;
         for (n=0; n<times; n++) {
-            labels += "<div style='float: left; width: "+repeatWidth+"px'>" + label + "</div>";
+            if (n == times -1 ) { repeatWidth = width - n * repeatWidth; } // shorten last one
+            labels += "<div style='float: left; width: "+repeatWidth+"px'>" + label + "/" + times+ "</div>";
         }
         $elm.html(labels);
         $anchor.append($elm);
