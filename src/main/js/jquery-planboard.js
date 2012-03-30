@@ -838,7 +838,7 @@
         var n;
         for (n=0; n<times; n++) {
             if (n == times -1 ) { repeatWidth = width - n * repeatWidth; } // shorten last one
-            labels += "<div style='float: left; width: "+repeatWidth+"px'>" + label + "/" + times+ "</div>";
+            labels += "<div style='float: left; width: "+repeatWidth+"px'>" + label + "</div>";
         }
         $elm.html(labels);
         $anchor.append($elm);
