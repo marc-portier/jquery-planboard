@@ -108,8 +108,8 @@
             $pb.planboard({
                 "uri": {
                     "rowdata":          "./data/ve.json", 
-                    "period":           "./data/period.json", 
-                    "allocation":       "./data/reservation.json",
+                    "period":           "./data/period.json{?firstdate,lastdate}", 
+                    "allocation":       "./data/reservation.json{?rows*,firstdate,lastdate}",
                     "datePickerImgSrc": "./image/date.png"
                 },
                 "allocRowProperty":   "ve"

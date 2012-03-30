@@ -52,7 +52,21 @@
     //
     // -------------------------------------------------------------------------
     
-
+    // uritemplate parsing and caching
+    var templates = {};
+    function getTemplate(t) {
+        if (templates[t] == null) {
+            templates[t] = uritemplate(t);
+        }
+        return templates[t];
+    }
+    
+    // uritemplate expansion
+    function expandUri(t, c) {
+        var p = getTemplate(t);
+        return p.expand(c);
+    }
+    
     // -------------------------------------------------------------------------
     //
     // planboard
@@ -656,10 +670,15 @@
         for (i=0; i<size; i++) {
             board.appendRow(data[i]);
         }
+        
+        if (board.cols && board.cols.firstnum != null && board.cols.lastnum != null) {
+            board.loadAllocs(board.cols.firstnum, board.cols.lastnum);
+        }
     }
     
     Planboard.prototype.loadRows = function() {
-        var rowdataUri = this.config.uri.rowdata;
+        var rowdataUri = expandUri(this.config.uri.rowdata, {});
+        
         var me = this;
         $.get(rowdataUri, function(d,s,x){ ajaxLoadedRows(me, d, s, x);}, "json");
     }
@@ -700,6 +719,16 @@
         }
         return new Date(num * ONEDAYms);
     };
+
+    Planboard.num2Str = function(num) {
+        var date = Planboard.num2Date(num);
+        var yyyy = "" + date.getFullYear();
+        var mm = date.getMonth() + 1;
+        var dd = date.getDate();
+        mm = (mm < 10) ? "0" + mm : "" + mm;
+        dd = (dd < 10) ? "0" + dd : "" + dd;
+        return yyyy + "-" + mm + "-" + dd;
+    }
     
     function monthClass(m) {
         return "m"+ (1 + m) % 2;
@@ -772,9 +801,14 @@
     
     Planboard.prototype.loadPeriods = function(firstnum, lastnum) {
     
-        // todo do something with the passed arguments towards calling the backend!
+        var uricontext = {
+            firstnum: firstnum,
+            lastnum : lastnum,
+            firstdate: Planboard.num2Str(firstnum),
+            lastdate:  Planboard.num2Str(lastnum)
+        };
         
-        var perioduri = this.config.uri.period;
+        var perioduri = expandUri(this.config.uri.period, uricontext);
         var me = this;
         $.get(perioduri, function(d,s,x){ ajaxLoadedPeriods(me, d, s, x);}, "json");
         
@@ -846,11 +880,27 @@
     }
     
     Planboard.prototype.loadAllocs = function(firstnum, lastnum) {
-        // todo do something with the passed arguments towards calling the backend!
         
-        var perioduri = this.config.uri.allocation;
-        var me = this;
-        $.get(perioduri, function(d,s,x){ ajaxLoadedAllocs(me, d, s, x);}, "json");
+        var rowids = [], code;
+        if (this.rows) {
+            //var l=0;
+            for( code in this.rows.bycode) {
+                //rowids[l++] = code;
+                rowids.push(code);
+            }
+            var uricontext = {
+                firstnum : firstnum,
+                lastnum  : lastnum,
+                firstdate: Planboard.num2Str(firstnum),
+                lastdate : Planboard.num2Str(lastnum),
+                rows     : rowids
+            };
+            
+            var allocuri = expandUri(this.config.uri.allocation, uricontext);
+
+            var me = this;
+            $.get(allocuri, function(d,s,x){ ajaxLoadedAllocs(me, d, s, x);}, "json");
+        }
     } 
     
     Planboard.prototype.updateTimes  = function() {
@@ -1095,8 +1145,6 @@
         return code + "_" + num;
     }
     
-    
-    //TODO change this into HTML production
     Planboard.prototype.newCell = function(code, num, row, col, prepend) {
         prepend = prepend || false;
         
