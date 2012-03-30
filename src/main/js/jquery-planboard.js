@@ -677,10 +677,10 @@
     }
     
     Planboard.prototype.loadRows = function() {
-        var rowdataUri = expandUri(this.config.uri.rowdata, {});
+        var rowuri = expandUri(this.config.uri.row, {});
         
         var me = this;
-        $.get(rowdataUri, function(d,s,x){ ajaxLoadedRows(me, d, s, x);}, "json");
+        $.get(rowuri, function(d,s,x){ ajaxLoadedRows(me, d, s, x);}, "json");
     }
     
     Planboard.prototype.initCells = function() {
