@@ -1,0 +1,52 @@
+@import "../../../main/css/jquery-planboard.less";
+
+.planboard .board .u.h.w .alloc {
+    // color-scheme combinations below grabbed from the presets on http://www.cssbuttongenerator.com/
+  
+    &.reservation {
+        .glow-button( #fe1a00, #ce0100, #ffffff, #b23e35, #d83526, #f29c93);
+    }
+    &.option {
+        .glow-button( #f0c911, #f2ab1e, #c92200, #ded17c, #e65f44, #f9eca0);
+    }
+    &.new {
+        height:           18px;
+        line-height:      22px;
+        top:              5px;
+        z-index:          2;
+        .glow-button( #79bbff, #378de5, #ffffff, #528ecc, #84bbf3, #bbdaf7);
+        // slightly darker variant
+        //.glow-button( #63b8ee, #468ccf, #14396a, #7cacde, #3866a3, #bee2f9);
+    }
+    &.block {
+        .glow-button( #c123de, #a20dbd, #ffffff, #9b14b3, #a511c0, #e184f3);
+    }
+    &.allotment {
+        .glow-button( #77d42a, #5cb811, #306108, #aade7c, #268a16, #caefab);
+    }
+}
+.planboard .highlight {
+    &.reservation, &.option, &.new, &.block, &.allotment, &.period {
+        font-weight:    normal;
+        font-style:     italic;
+        font-size:      1.4em;
+    }
+    &.reservation {
+        color:          #fe1a00;
+    }
+    &.option {
+        color:          #f0c911;
+    }
+    &.new {
+        color:          #79bbff;
+    }
+    &.block {
+        color:          #c123de;
+    }
+    &.allotment {
+        color:          #77d42a;
+    }
+    &.period {
+        color:          @periodTextColor;
+    }
+}
