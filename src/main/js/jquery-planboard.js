@@ -96,6 +96,15 @@
         delete options.onSelect;  // make sure nobody captures this event
         this.config.datepicker = options; // not setting them as default as not to interfere
         
+        if (this.config.startDate != null && typeof this.config.startDate == 'string') {
+            var ds = this.config.startDate.split("-");
+            var dt = new Date();
+            dt.setFullYear(Number(ds[0]));
+            dt.setMonth(Number(ds[1]) -1);
+            dt.setDate(Number(ds[2]));
+            this.config.startDate = dt;
+        }
+        
         this.$board = $elm;
         this.init();        
         
