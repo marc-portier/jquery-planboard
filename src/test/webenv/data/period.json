@@ -1,7 +1,7 @@
 [
-  {"id": 1, "from": "2012-03-14", "till": "2012-03-14", "label": "Valentijn"},
-  {"id": 2, "from": "2012-03-18", "till": "2012-03-27", "label": "Krokus"},
-  {"id": 3, "from": "2012-03-29", "till": "2012-04-02", "label": "Testerdetest"},
-  {"id": 4, "from": "2012-03-09", "till": "2012-03-12", "label": "Voorlijk"},
-  {"id": 5, "from": "2012-04-22", "till": "2012-04-28", "label": "Achterlijk"}
+  {"id": 1, "from": "2012-02-14", "till": "2012-02-14", "label": "Valentijn"},
+  {"id": 2, "from": "2012-02-18", "till": "2012-02-27", "label": "Krokus"},
+  {"id": 3, "from": "2012-02-29", "till": "2012-03-02", "label": "Testerdetest"},
+  {"id": 4, "from": "2012-02-09", "till": "2012-02-12", "label": "Voorlijk"},
+  {"id": 5, "from": "2012-03-22", "till": "2012-03-28", "label": "Achterlijk"}
 ]
