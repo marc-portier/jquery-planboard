@@ -1,11 +1,9 @@
-//(c) 2012, Marc Portier
-// CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
+/*
+ jQuery Planboard version @VERSION - @DATE - http://github.com/marc-portier/jquery-planboard
 
- //TODO
- // --
- // think dependencies: default css to be overriden should be in src/main
- // less should be compiled
- // js should be minified
+ (c) 2012, Marc Portier
+ CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
+*/
 ;
 ( function( $) {
 
@@ -141,7 +139,7 @@
         allocOffset:         0.5,
         // property of allocation data containing 'from' time
         allocFromProperty:   "from",
-        // property of allocation data containing 't‎ill' time
+        // property of allocation data containing 'till' time
         allocTillProperty:   "till",
         // property of allocation data containing 'identifier' (unique)
         allocIdProperty:     "id",
