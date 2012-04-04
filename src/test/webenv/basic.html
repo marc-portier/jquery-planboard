@@ -8,9 +8,16 @@
   <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.css"         media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/jquery.jscrollpane.lozenge.css" media="all" />
   <link type="text/css" rel="stylesheet"      href="./css/demo.css"                       media="all" />
-  <link type="text/css" rel="stylesheet/less" href="./css/jquery-planboard-custom.less"          media="all" />
-
+  
+  <!-- start css option
+       * for debugging on source 
+  <link type="text/css" rel="stylesheet/less" href="./css/jquery-planboard-custom.less"   media="all" />
   <script type="text/javascript" src="./js/less-1.2.1.min.js"></script>
+  -->
+  <!-- * for build-testing -- best use 'make watch' -->
+  <link type="text/css" rel="stylesheet"      href="../../../build/jquery-planboard.min.css"  media="all" />
+  <link type="text/css" rel="stylesheet"      href="./css/jquery-planboard-custom-part.css"  media="all" />
+  <!-- end css option -->
 
   <script type="text/javascript" src="./js/jquery-1.7.1.min.js" ></script>
   <script type="text/javascript" src="./js/jquery-ui-1.8.18.custom.min.js"></script>
@@ -21,7 +28,15 @@
   <script type="text/javascript" src="./js/jquery.jscrollpane.js"></script>
   
   <script type="text/javascript" src="./js/uritemplates.js" ></script>
-  <script type="text/javascript" src="../../main/js/jquery-planboard.js" ></script>
+
+
+  <!-- start js option
+       * for debugging on source 
+  <script type="text/javascript" src="../../main/js/jquery-planboard.min.js" ></script>
+  -->
+  <!-- * for build-testing -- best use 'make watch' -->
+  <script type="text/javascript" src="../../../build/jquery-planboard.min.js" ></script>
+  <!-- end js option -->
   
   <script type="text/javascript" >
     ;(function($) {

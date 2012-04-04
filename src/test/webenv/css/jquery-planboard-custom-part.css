@@ -1,0 +1,159 @@
+/* generated through lessc jquery-planboard-custom.less and then keeping only the custom part */
+.planboard .board .u.h.w .alloc.reservation {
+  -moz-border-radius: 24px;
+  -webkit-border-radius: 24px;
+  border-radius: 24px;
+  -moz-box-shadow: inset 0px 1px 1px 0px #f29c93;
+  -webkit-box-shadow: inset 0px 1px 1px 0px #f29c93;
+  box-shadow: inset 0px 1px 1px 0px #f29c93;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #fe1a00), color-stop(1, #ce0100));
+  background: -moz-linear-gradient(center top, #fe1a00 5%, #ce0100 100%);
+  background-color: #fe1a00;
+  border: 1px solid #d83526;
+  display: inline-block;
+  color: #ffffff;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px #b23e35;
+}
+.planboard .board .u.h.w .alloc.reservation:hover {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ce0100), color-stop(1, #fe1a00));
+  background: -moz-linear-gradient(center top, #ce0100 5%, #fe1a00 100%);
+  background-color: #ce0100;
+}
+.planboard .board .u.h.w .alloc.reservation:active {
+  position: relative;
+  top: 1px;
+}
+.planboard .board .u.h.w .alloc.option {
+  -moz-border-radius: 24px;
+  -webkit-border-radius: 24px;
+  border-radius: 24px;
+  -moz-box-shadow: inset 0px 1px 1px 0px #f9eca0;
+  -webkit-box-shadow: inset 0px 1px 1px 0px #f9eca0;
+  box-shadow: inset 0px 1px 1px 0px #f9eca0;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f0c911), color-stop(1, #f2ab1e));
+  background: -moz-linear-gradient(center top, #f0c911 5%, #f2ab1e 100%);
+  background-color: #f0c911;
+  border: 1px solid #e65f44;
+  display: inline-block;
+  color: #c92200;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px #ded17c;
+}
+.planboard .board .u.h.w .alloc.option:hover {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f2ab1e), color-stop(1, #f0c911));
+  background: -moz-linear-gradient(center top, #f2ab1e 5%, #f0c911 100%);
+  background-color: #f2ab1e;
+}
+.planboard .board .u.h.w .alloc.option:active {
+  position: relative;
+  top: 1px;
+}
+.planboard .board .u.h.w .alloc.new {
+  height: 18px;
+  line-height: 22px;
+  top: 5px;
+  z-index: 2;
+  -moz-border-radius: 24px;
+  -webkit-border-radius: 24px;
+  border-radius: 24px;
+  -moz-box-shadow: inset 0px 1px 1px 0px #bbdaf7;
+  -webkit-box-shadow: inset 0px 1px 1px 0px #bbdaf7;
+  box-shadow: inset 0px 1px 1px 0px #bbdaf7;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #79bbff), color-stop(1, #378de5));
+  background: -moz-linear-gradient(center top, #79bbff 5%, #378de5 100%);
+  background-color: #79bbff;
+  border: 1px solid #84bbf3;
+  display: inline-block;
+  color: #ffffff;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px #528ecc;
+}
+.planboard .board .u.h.w .alloc.new:hover {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #378de5), color-stop(1, #79bbff));
+  background: -moz-linear-gradient(center top, #378de5 5%, #79bbff 100%);
+  background-color: #378de5;
+}
+.planboard .board .u.h.w .alloc.new:active {
+  position: relative;
+  top: 1px;
+}
+.planboard .board .u.h.w .alloc.block {
+  -moz-border-radius: 24px;
+  -webkit-border-radius: 24px;
+  border-radius: 24px;
+  -moz-box-shadow: inset 0px 1px 1px 0px #e184f3;
+  -webkit-box-shadow: inset 0px 1px 1px 0px #e184f3;
+  box-shadow: inset 0px 1px 1px 0px #e184f3;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #c123de), color-stop(1, #a20dbd));
+  background: -moz-linear-gradient(center top, #c123de 5%, #a20dbd 100%);
+  background-color: #c123de;
+  border: 1px solid #a511c0;
+  display: inline-block;
+  color: #ffffff;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px #9b14b3;
+}
+.planboard .board .u.h.w .alloc.block:hover {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #a20dbd), color-stop(1, #c123de));
+  background: -moz-linear-gradient(center top, #a20dbd 5%, #c123de 100%);
+  background-color: #a20dbd;
+}
+.planboard .board .u.h.w .alloc.block:active {
+  position: relative;
+  top: 1px;
+}
+.planboard .board .u.h.w .alloc.allotment {
+  -moz-border-radius: 24px;
+  -webkit-border-radius: 24px;
+  border-radius: 24px;
+  -moz-box-shadow: inset 0px 1px 1px 0px #caefab;
+  -webkit-box-shadow: inset 0px 1px 1px 0px #caefab;
+  box-shadow: inset 0px 1px 1px 0px #caefab;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #77d42a), color-stop(1, #5cb811));
+  background: -moz-linear-gradient(center top, #77d42a 5%, #5cb811 100%);
+  background-color: #77d42a;
+  border: 1px solid #268a16;
+  display: inline-block;
+  color: #306108;
+  text-decoration: none;
+  text-shadow: 1px 1px 1px #aade7c;
+}
+.planboard .board .u.h.w .alloc.allotment:hover {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #5cb811), color-stop(1, #77d42a));
+  background: -moz-linear-gradient(center top, #5cb811 5%, #77d42a 100%);
+  background-color: #5cb811;
+}
+.planboard .board .u.h.w .alloc.allotment:active {
+  position: relative;
+  top: 1px;
+}
+.planboard .highlight.reservation,
+.planboard .highlight.option,
+.planboard .highlight.new,
+.planboard .highlight.block,
+.planboard .highlight.allotment,
+.planboard .highlight.period {
+  font-weight: normal;
+  font-style: italic;
+  font-size: 1.4em;
+}
+.planboard .highlight.reservation {
+  color: #fe1a00;
+}
+.planboard .highlight.option {
+  color: #f0c911;
+}
+.planboard .highlight.new {
+  color: #79bbff;
+}
+.planboard .highlight.block {
+  color: #c123de;
+}
+.planboard .highlight.allotment {
+  color: #77d42a;
+}
+.planboard .highlight.period {
+  color: #c56300;
+}
+
