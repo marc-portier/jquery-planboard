@@ -954,9 +954,11 @@
      
     Planboard.prototype.clearColumns = function() {
     
-        for (code in this.rows.bycode) {
-            var row = this.rows.bycode[code];
-            row.$row.html("");
+        if (this.rows) {
+            for (code in this.rows.bycode) {
+                var row = this.rows.bycode[code];
+                row.$row.html("");
+            }
         }
         this.$days.html("");
         this.cols = null;
