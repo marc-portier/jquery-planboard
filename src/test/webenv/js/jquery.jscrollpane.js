@@ -65,7 +65,7 @@
 				verticalDragPosition, horizontalDrag, dragMaxX, horizontalDragPosition,
 				verticalBar, verticalTrack, scrollbarWidth, verticalTrackHeight, verticalDragHeight, arrowUp, arrowDown,
 				horizontalBar, horizontalTrack, horizontalTrackWidth, horizontalDragWidth, arrowLeft, arrowRight,
-				reinitialiseInterval, originalPadding, originalPaddingTotalWidth, previousContentWidth,
+				reinitialiseInterval, originalPadding, originalPaddingTotalWidth,
 				wasAtTop = true, wasAtLeft = true, wasAtBottom = false, wasAtRight = false,
 				originalElement = elem.clone(false, false).empty(),
 				mwEvent = $.fn.mwheelIntent ? 'mwheelIntent.jsp' : 'mousewheel.jsp';
@@ -77,9 +77,13 @@
 			originalPaddingTotalWidth = (parseInt(elem.css('paddingLeft'), 10) || 0) +
 										(parseInt(elem.css('paddingRight'), 10) || 0);
 
-            function probeWidth() {
-                var w = s.contentWidth ||  pane[0].scrollWidth;
-                return w;
+			function probePane() {
+			
+				pane.css('overflow', 'auto');
+			    var w = s.contentWidth || pane[0].scrollWidth, h = pane[0].scrollHeight;
+				pane.css('overflow', '');
+			    
+			    return {width: w, height: h};
 			}
 
 			function initialise(s)
@@ -148,11 +152,10 @@
 					}
 
 					// If nothing changed since last check...
-					if (!hasContainingSpaceChanged && previousContentWidth == probeWidth() && pane.outerHeight() == contentHeight) {
+					if (!hasContainingSpaceChanged && contentWidth == probePane().width && pane.outerHeight() == contentHeight) {
 						elem.width(paneWidth);
 						return; 
 					}
-					previousContentWidth = contentWidth;
 					
 					pane.css('width', '');
 					elem.width(paneWidth);
@@ -160,10 +163,9 @@
 					container.find('>.jspVerticalBar,>.jspHorizontalBar').remove().end();
 				}
 
-				pane.css('overflow', 'auto');
-				contentWidth = probeWidth();
-				contentHeight = pane[0].scrollHeight;
-				pane.css('overflow', '');
+				var p = probePane();
+				contentWidth = p.width;
+				contentHeight = p.height;
 
 				percentInViewH = contentWidth / paneWidth;
 				percentInViewV = contentHeight / paneHeight;
