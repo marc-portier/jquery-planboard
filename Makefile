@@ -41,7 +41,7 @@ makedist:
         cp ${BUILD}/${NAME}.min.js  ${DIST}/${NAME}-${VERSION}.min.js; \
         cp ${BUILD}/${NAME}.css     ${DIST}/${NAME}-${VERSION}.css; \
         cp ${BUILD}/${NAME}.min.css ${DIST}/${NAME}-${VERSION}.min.css; \
-        echo "success building distro for version ${VERSION} - `date`; \
+        echo "success building distro for version ${VERSION} - `date`"; \
         echo "now test then add, commit, tag and push through git to publish"; \
 	else \
 		echo "No build is available. Run 'make' or explicitely 'make build' first."; \
