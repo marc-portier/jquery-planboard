@@ -32,9 +32,10 @@
 
   <!-- start js option
        * for debugging on source 
-  <script type="text/javascript" src="../../main/js/jquery-planboard.min.js" ></script>
+  <script type="text/javascript" src="../../main/js/jquery-planboard.js" ></script>
   -->
-  <!-- * for build-testing -- best use 'make watch' -->
+  <!-- * for build-testing -- best use 'make watch'
+  -->
   <script type="text/javascript" src="../../../build/jquery-planboard.min.js" ></script>
   <!-- end js option -->
   
@@ -127,7 +128,7 @@
                     "allocation":       "./data/reservation.json{?rows*,firstdate,lastdate}",
                     "datePickerImgSrc": "./image/date.png"
                 },
-                "allocRowProperty":   "ve",
+                "allocRowProperty":   "ve.id",
                 "startDate"       :   "2012-02-07"
             });
             var api = $pb.data('planboard');

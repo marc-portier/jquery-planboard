@@ -65,6 +65,32 @@
         return p.expand(c);
     }
     
+    // property-reader
+    function makePropReader(t) {
+        if (t.constructor == PropReader) {
+            return t;
+        }
+        return new PropReader(t);
+    }
+    
+    function PropReader(t) {
+        this.props = (t != null) ? t.split('.') : [];
+    }
+    
+    PropReader.prototype.readFrom = function(o) {
+        var v = o;
+        var i = 0, len = this.props.length;
+        while (i < len && v != null) {
+            v  = v[this.props[i++]];
+        }
+        return v;
+    }
+    
+    function readProp(config, propName, obj) {
+        config[propName] = makePropReader(config[propName]);
+        return config[propName].readFrom(obj);
+    }
+    
     // -------------------------------------------------------------------------
     //
     // planboard
@@ -758,13 +784,13 @@
             this.periodnums = {};
         }
         
-        var id = period[this.config.periodIdProperty];
+        var id = readProp(this.config, "periodIdProperty", period);
         if (this.periods[id]) { // this period was already added before
             return;  // TODO maybe consider re-adding periods with changed attributes
         }
         
-        var fromnum = Planboard.date2Num(Planboard.string2Date(period[this.config.periodFromProperty]));
-        var tillnum = Planboard.date2Num(Planboard.string2Date(period[this.config.periodTillProperty]));
+        var fromnum = Planboard.date2Num(Planboard.string2Date(readProp(this.config, "periodFromProperty", period)));
+        var tillnum = Planboard.date2Num(Planboard.string2Date(readProp(this.config, "periodTillProperty", period)));
         
         if (tillnum < this.cols.firstnum || fromnum > this.cols.lastnum) {
             return;
@@ -779,7 +805,8 @@
         
         var headId = toCellId("", anchornum);
         var $anchor = this.$days.find("#" + headId);
-        period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + period[this.config.periodLabelProperty] + "</div>");
+        period.$elm = $("<div class='period' style='left: " + offset + "px; width: " + width + "px'>" + 
+                        readProp(this.config, "periodLabelProperty", period) + "</div>");
         Planboard.registerPeriodEvents(this, period.$elm, id, fromnum, tillnum);
 
         $anchor.append(period.$elm);
@@ -859,21 +886,21 @@
             this.allocs = {};
         }
         
-        var id = alloc[this.config.allocIdProperty];
+        var id = readProp(this.config, "allocIdProperty", alloc);
         if (this.allocs[id]) { // this alloc was already added before
             return;  // TODO maybe consider re-adding allocs with changed attributes
         }
         
-        var fromnum = Planboard.date2Num(Planboard.string2Date(alloc[this.config.allocFromProperty]));
-        var tillnum = Planboard.date2Num(Planboard.string2Date(alloc[this.config.allocTillProperty]));
+        var fromnum = Planboard.date2Num(Planboard.string2Date(readProp(this.config, "allocFromProperty" , alloc)));
+        var tillnum = Planboard.date2Num(Planboard.string2Date(readProp(this.config, "allocTillProperty", alloc)));
         
         if (tillnum < this.cols.firstnum || fromnum > this.cols.lastnum) {
             return;
         }
         
-        var code = alloc[this.config.allocRowProperty];
-        var label = alloc[this.config.allocLabelProperty];
-        var style = alloc[this.config.allocTypeProperty];
+        var code = readProp(this.config, "allocRowProperty", alloc);
+        var label = readProp(this.config, "allocLabelProperty", alloc);
+        var style = readProp(this.config, "allocTypeProperty", alloc);
 
         alloc.$elm = this.makeAllocElm(id, style, code, fromnum, tillnum, label);
         
@@ -1071,8 +1098,8 @@
             this.rows={ "count" : 0, "bycode" : {}};
         }
         
-        var code = rowData[this.config.rowIdProperty];
-        var label = rowData[this.config.rowLabelProperty];
+        var code = readProp(this.config, "rowIdProperty", rowData);
+        var label = readProp(this.config, "rowLabelProperty", rowData);
         
         var newRow = this.rows.bycode[code];
         if (newRow) {  // already exists! 
