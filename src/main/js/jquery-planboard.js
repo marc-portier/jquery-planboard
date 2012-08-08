@@ -203,8 +203,10 @@
         // property of row data containing 'label'
         rowLabelProperty:    "label",
         
-        // location for date-picker-image
-        datePickerImgSrc:    "./image/date.png"
+        // html for various buttons
+        datePickerButton:    "<button class='tool'><img src='./image/date.png' /></button>",
+        prependButton:       "<button class='colPrepend'>&lt;&lt;</button>", 
+        appendButton:        "<button class='colAppend'>&gt;&gt;</button>"
     }
     
     Planboard.prototype.eachRow = function(selection, fn) {
@@ -297,13 +299,13 @@
         this.$nm.append(this.$nscroll);
         
         // initialise northwest
-        var $btnPreDates = $("<button class='colPrepend'>&lt;&lt;</button>").click(function() {
+        var $btnPreDates = $(this.config.prependButton).click(function() {
             me.prependCol(me.config.addDayCount)
         });
         this.$nw.html("<div></div>").append($btnPreDates);
         
         // initialise northeast
-        var $btnAppDates = $("<button class='colAppend'>&gt;&gt;</button>").click(function() {
+        var $btnAppDates = $(this.config.appendButton).click(function() {
             me.appendCol(me.config.addDayCount)
         });
         this.$ne.html("<div></div>").append($btnAppDates);
@@ -347,7 +349,7 @@
         $datePickDiv.datepicker($.extend({onSelect: dateSelected}, this.config.datepicker));
         $datePickDiv.hide();
        
-        this.$pickDate = $("<button class='tool'><img src='"+this.config.datePickerImgSrc+"'></button>");
+        this.$pickDate = $(this.config.datePickerButton);
         this.$pickDate.click(function() {me.pickDateTool($datePickDiv)});
         this.$tools.append(this.$pickDate);
 
