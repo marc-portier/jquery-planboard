@@ -573,7 +573,7 @@
                 sel.tilldate = Planboard.num2Date(sel.tillnum);
                 lbl += lbl.length ? ": " : "";
                 lbl += "("+ (sel.tillnum - sel.fromnum) +") ";
-                lbl += Planboard.toDateStr(me, sel.fromdate) + " -> " + Planboard.toDateStr(me,  sel.tilldate);
+                lbl += Planboard.toDateStr(me, sel.fromdate) + "  " + Planboard.toDateStr(me,  sel.tilldate);
             }
             sel.lbl = lbl;
             me.setStatus(lbl);
@@ -706,9 +706,13 @@
             board.appendRow(data[i]);
         }
         
-        if (board.cols && board.cols.firstnum != null && board.cols.lastnum != null) {
-            board.loadAllocs(board.cols.firstnum, board.cols.lastnum);
-        }
+        board.reloadAllocs();
+    }
+    
+    Planboard.prototype.reloadAllocs = function() {
+        if (this.cols && this.cols.firstnum != null && this.cols.lastnum != null) {
+            this.loadAllocs(this.cols.firstnum, this.cols.lastnum);
+        }    
     }
     
     Planboard.prototype.loadRows = function() {
@@ -890,7 +894,8 @@
         
         var id = readProp(this.config, "allocIdProperty", alloc);
         if (this.allocs[id]) { // this alloc was already added before
-            return;  // TODO maybe consider re-adding allocs with changed attributes
+            this.allocs[id].$elm.remove();
+            delete this.allocs[id];
         }
         
         var fromnum = Planboard.date2Num(Planboard.string2Date(readProp(this.config, "allocFromProperty" , alloc)));
