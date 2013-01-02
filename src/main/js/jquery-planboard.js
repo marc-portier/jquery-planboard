@@ -566,7 +566,8 @@
             
             var lbl = "";
             if (sel.code) {
-                lbl += me.rows.bycode[sel.code].label;
+                sel.row = me.rows.bycode[sel.code];
+                lbl += sel.row.label;
             }
             if (sel.fromnum && sel.tillnum) {
                 sel.fromdate = Planboard.num2Date(sel.fromnum);
