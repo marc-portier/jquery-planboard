@@ -58,4 +58,7 @@ watch:
 		echo "You can install it by running: gem install watchr"; \
 	fi
 
+clean:
+	rm -rf ${BUILD}
+
 .PHONY: build watch

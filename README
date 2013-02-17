@@ -4,9 +4,11 @@ jquery based Planboard viewer with events and callbacks for managing planning sc
 How can I see this working:
 --------------------------
 - checkout from github
+- build (For more details on satisfying the dependencies see section "Build Dependencies")
 - open src/test/webenv/basic.html in a browser
 
-(when using chrome be sure to add the switch: --allow-file-access-from-files the current in-browser use of less.js requires that)
+(when using chrome be sure to add the switch: --allow-file-access-from-files the current in-browser use of loaded local ajax files requires that)
+
 
 
 Current state:
@@ -17,10 +19,11 @@ WORKING:
   - possibility to add dates in front and at the back
   - allow to navigate to a certain date
   - allow to select a new allocation to commit
+  - grow and reposition the selection using keyboard events
+  - callback methods for clicks on existing allocations or new ones
 
 
 NOT WORKING:
-  - none of the promissed events and callbacks, but feel free to propose some extension points as we go allong
 
 
 DOCS:
@@ -35,6 +38,17 @@ NEXT/TODO:
   - see javascript file...
 
 
+Build Dependencies:
+-------------------
+On Ubuntu:
+  $ sudo apt-get install make nodejs node-less node-uglify
+  $ sudo ln -s /usr/bin/nodejs /usr/bin/node
+  $ make 
+
+Note: if people have trouble building this distro they can politely ask me (or somebody else) to it for them.
+Somewhere down the line I suspect a ready-build distro will be made available.
+(I just need to figure out how to best use tags and built-in distribution features on github.com to get the most out of that: ideas welcome)
+
 
 
 This project is Using:
@@ -47,6 +61,10 @@ jScrollPane from http://jscrollpane.kelvinluck.com/
     
 less.js from http://lesscss.org
     github: https://github.com/cloudhead/less.js
+
+uritemplates (Implementation of RFC 6570)
+    github: https://github.com/marc-portier/uri-templates
+
 
 Special credits to:
 ------------------
