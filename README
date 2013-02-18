@@ -7,7 +7,13 @@ How can I see this working:
 - build (For more details on satisfying the dependencies see section "Build Dependencies")
 - open src/test/webenv/basic.html in a browser
 
-(when using chrome be sure to add the switch: --allow-file-access-from-files the current in-browser use of loaded local ajax files requires that)
+note:
+When using chrome be sure to add the switch: --allow-file-access-from-files 
+the current in-browser use of loaded local ajax files requires that.
+
+Read this docs to understand how to do that on the windows platform:
+* http://www.chromium.org/developers/how-tos/run-chromium-with-flags
+* http://peter.sh/experiments/chromium-command-line-switches/
 
 
 
