@@ -1,12 +1,14 @@
 /*
  jQuery Planboard version @VERSION - @DATE - http://github.com/marc-portier/jquery-planboard
 
- (c) 2012, Marc Portier
+ (c) 2012-2013, Marc Portier
  CC-SA-BY license 2.0 - BE, see http://creativecommons.org/licenses/by/2.0/be/
 */
 ;
 ( function( $) {
 
+    // ------------------------------------------------------------------------
+    
     function jqExtendor(name, fn) {
         var ext = {};
         ext[name] = function(pass) {
@@ -44,6 +46,7 @@
         }
     };
 
+    
     // -------------------------------------------------------------------------
     //
     // common util functions
@@ -132,7 +135,7 @@
         }
         
         this.$board = $elm;
-        this.init();        
+        this.init(); 
         
         $elm.data('planboard', this);
     }
@@ -704,9 +707,9 @@
     function ajaxLoadedRows(board, data, textStatus, jqXhr) {
         var size = data.length;
         for (i=0; i<size; i++) {
-            board.appendRow(data[i]);
+            var last = (size == i+1);
+            board.appendRow(data[i], last);
         }
-        
         board.reloadAllocs();
     }
     
@@ -1100,7 +1103,7 @@
         }
     }
         
-    Planboard.prototype.appendRow = function(rowData) {
+    Planboard.prototype.appendRow = function(rowData, adjustScrollBar) {
     
         if (this.rows == null) {
             this.rows={ "count" : 0, "bycode" : {}};
@@ -1122,12 +1125,15 @@
         this.$center.append(newRow.$row);
         
         //resize
-        this.rowHeadResize(newRow);
+        this.rowHeadResize(newRow, adjustScrollBar);
         
         var newHeight = 1 + this.rows.count * (this.config.unitsize);
         this.$west.height(newHeight);
         this.$center.height(newHeight);
-        this.reinitVerticalScrollBar();
+        if (adjustScrollBar) {
+            this.reinitVerticalScrollBar();
+        }
+        
     };
     
     function PlanRow(code, label, rowData, board) {
@@ -1173,7 +1179,7 @@
         this.rowHeadResize();
     }
     
-    Planboard.prototype.rowHeadResize = function(row) {
+    Planboard.prototype.rowHeadResize = function(row, adjustScrollBar) {
         if (row) {
             var newCellWidth = row.$elm.width() + 1;
             var newWidth = Math.max(this.$west.width(), newCellWidth);
@@ -1183,7 +1189,9 @@
         var newHeight = 1 + this.rows.count * (this.config.unitsize);
         this.$west.height(newHeight);
         this.$center.height(newHeight);
-        this.reinitVerticalScrollBar();
+        if (adjustScrollBar) {
+            this.reinitVerticalScrollBar();
+        }
     };
     
     function toCellId(code, num) {
