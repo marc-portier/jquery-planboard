@@ -1155,10 +1155,12 @@
         this.$row     = $("<div class='uc row' id="+rowId+"></div>");
 
         var allCols = board.cols;
-        var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
-        for (colnum=firstnum; colnum <= lastnum; colnum++) {
-            var col = allCols.bynum[colnum];
-            board.newCell(this.code, colnum, this, col);
+        if (allCols) {
+            var colnum, firstnum = allCols.firstnum, lastnum = allCols.lastnum;
+            for (colnum=firstnum; colnum <= lastnum; colnum++) {
+                var col = allCols.bynum[colnum];
+                board.newCell(this.code, colnum, this, col);
+            }
         }
     }
 
